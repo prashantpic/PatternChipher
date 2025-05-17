@@ -1,0 +1,88 @@
+/* Accessibility.uss */
+/* Contains USS classes and variables specifically for accessibility features. */
+/* REQ-UIX-013 */
+
+/* Import shared variables if not automatically available in context */
+/* @import url("../Themes/SharedVariables.uss"); */
+
+/* Focus Visible Styles (REQ-UIX-013) */
+/* Apply to elements that should show a clear focus indicator when navigated via keyboard/controller */
+/* Unity's default focus ring might be sufficient, but this allows customization. */
+/* The :focus pseudo-class is the standard way. */
+*:focus {
+    /* Using box-shadow for a more flexible outline that doesn't affect layout */
+    /* box-shadow: 0 0 0 var(--focus-outline-offset) var(--color-background-primary), 0 0 0 calc(var(--focus-outline-offset) + var(--focus-outline-width)) var(--focus-outline-color); */
+    
+    /* Or a simpler outline (might be clipped if offset is not supported well) */
+     outline-color: var(--focus-outline-color);
+     outline-width: var(--focus-outline-width);
+     outline-style: var(--focus-outline-style); /* solid, dotted, dashed */
+     outline-offset: var(--focus-outline-offset); /* May not be fully supported on all UI Toolkit versions/elements */
+}
+
+/* Class to explicitly mark an element as needing a visible focus state if default isn't enough */
+.focusable:focus {
+    outline-color: var(--focus-outline-color);
+    outline-width: var(--focus-outline-width);
+    outline-style: var(--focus-outline-style);
+}
+
+/* Tap Target Size (REQ-UIX-013.3) */
+/* This class can be applied to buttons or interactive elements to ensure minimum size. */
+/* Alternatively, set min-width and min-height directly in component-specific USS. */
+.min-tap-target {
+    min-width: var(--tap-target-min-size);
+    min-height: var(--tap-target-min-size);
+    /* Add padding if the visual part is smaller but you want a larger touch area */
+    /* padding: var(--spacing-sm); This would make content area smaller */
+}
+
+/* Example for ensuring padding contributes to tap area without shrinking visible content too much */
+.tap-target-padding {
+    padding: var(--spacing-sm); /* e.g. 8px padding on all sides */
+}
+/* Ensure the element itself + padding meets var(--tap-target-min-size) */
+
+
+/* Reduced Motion Considerations (REQ-UIX-013.4) */
+/* While primarily handled in C# (UIAnimationUtils), USS can define "no-animation" states. */
+/* A class could be added by C# to disable transitions/animations. */
+.reduced-motion .animated-element {
+    transition-duration: 0.01s !important; /* Effectively disables transitions */
+    animation-duration: 0.01s !important; /* Effectively disables keyframe animations */
+    animation-iteration-count: 1 !important;
+}
+/* Or, if using UI Toolkit's built-in transition properties: */
+.reduced-motion {
+    /* Example: if you have transitions on opacity or transform */
+    /* --transition-duration-opacity: 0.01s; */
+    /* --transition-duration-transform: 0.01s; */
+}
+/* Then elements use: transition-duration: var(--transition-duration-opacity); */
+
+
+/* High Contrast Adjustments (REQ-UIX-013.1) */
+/* Specific high-contrast styles might be in a dedicated theme (e.g., HighContrast.uss). */
+/* This file could include general helper classes if needed. */
+.high-contrast-text {
+    /* Example: Ensure text is always very light or very dark */
+    /* color: var(--color-hc-text); This variable would be defined in the high-contrast theme */
+}
+
+.high-contrast-border {
+    border-width: 2px;
+    border-color: var(--color-hc-border); /* Defined in high-contrast theme */
+}
+
+/* Styles for screen reader only text (if applicable, though UI Toolkit handles accessibility labels mostly via properties) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border-width: 0;
+}

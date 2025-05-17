@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/DefaultAccessibilityProfile.asset
+// Type: PatternCipher.UI.Accessibility.AccessibilityProfile
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.AccessibilityProfile C# script (ScriptableObject) exists.
+// 2. In the Unity Editor, navigate to the target folder in the Project window.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> AccessibilityProfile.
+// 4. Name the created asset "DefaultAccessibilityProfile".
+// 5. Configure its values in the Inspector:
+//    - Profile Name: "Default"
+//    - Base Color Palette: (Assign DefaultPalette.asset)
+//    - Color Vision Mode: Normal
+//    - Colorblind Palette Override: (null or none)
+//    - Enable Reduced Motion: false
+//    - Enable Haptics: true
+//    - Text Size Multiplier: 1.0
+
+// REQ-UIX-013: Defines default accessibility settings.

@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/ColorPalettes/DefaultPalette.asset
+// Type: PatternCipher.UI.Accessibility.ColorPaletteDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.ColorPaletteDefinition C# script (ScriptableObject) exists.
+//    (This script should contain a List<NamedColor> where NamedColor has 'Name' (string) and 'Value' (Color)).
+// 2. In the Unity Editor, navigate to the target folder in the Project window.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> ColorPaletteDefinition.
+// 4. Name the created asset "DefaultPalette".
+// 5. Configure its values in the Inspector:
+//    - Palette Name: "Default"
+//    - Colors (List):
+//        - Name: "--color-primary", Value: (e.g., a pleasant blue #007BFF)
+//        - Name: "--color-background-primary", Value: (e.g., white #FFFFFF)
+//        - Name: "--color-text-primary", Value: (e.g., dark grey #212529)
+//        - ... (add other colors as defined in SharedVariables.uss or needed by the default theme)
+
+// REQ-UIX-013: Defines the default color palette for the UI.

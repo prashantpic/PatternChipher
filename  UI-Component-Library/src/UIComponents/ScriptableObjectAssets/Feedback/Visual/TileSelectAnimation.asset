@@ -1,0 +1,16 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Visual/TileSelectAnimation.asset
+// Type: PatternCipher.UI.Components.Feedback.VisualFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.VisualFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> VisualFeedbackDefinition.
+// 4. Name it "TileSelectAnimation".
+// 5. Configure its values:
+//    - Animation Type: ScalePunch (or a custom enum value for a specific shader effect)
+//    - DOTween Params: (e.g., JSON string: {"strength": 0.1, "vibrato": 5, "elasticity": 0.5} or simple float for strength)
+//    - Duration: 0.25
+//    - Particle Effect Address: (null or none)
+
+// REQ-6-007: Visual feedback for tile selection.

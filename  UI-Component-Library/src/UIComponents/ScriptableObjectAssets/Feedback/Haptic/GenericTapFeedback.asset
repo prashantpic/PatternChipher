@@ -1,0 +1,15 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Haptic/GenericTapFeedback.asset
+// Type: PatternCipher.UI.Components.Feedback.HapticFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.HapticFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> HapticFeedbackDefinition.
+// 4. Name it "GenericTapFeedback".
+// 5. Configure its values:
+//    - Haptic Type: LightTap (or MediumTap, from HapticTypeEnum)
+//    - Intensity: 0.5 
+//    - Duration: 0.1 (or platform default if type implies duration)
+
+// REQ-UIX-013.5: Haptic feedback for generic tap interactions.

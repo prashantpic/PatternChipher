@@ -1,0 +1,16 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Audio/MatchFormationFeedback.asset
+// Type: PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> AudioFeedbackDefinition.
+// 4. Name it "MatchFormationFeedback".
+// 5. Configure its values:
+//    - Audio Clip Address: (Assign an AddressableAssetReference to a positive, rewarding sound)
+//    - Volume: 0.8
+//    - Pitch Min: 1.0
+//    - Pitch Max: 1.0
+
+// REQ-6-003: Sound effect for match formations.

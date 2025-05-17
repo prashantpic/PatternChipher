@@ -1,0 +1,16 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Audio/TileSwapFeedback.asset
+// Type: PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> AudioFeedbackDefinition.
+// 4. Name it "TileSwapFeedback".
+// 5. Configure its values:
+//    - Audio Clip Address: (Assign an AddressableAssetReference to a swoosh or slide sound)
+//    - Volume: 0.6
+//    - Pitch Min: 0.9
+//    - Pitch Max: 1.1
+
+// REQ-6-003: Sound effect for tile swap actions.

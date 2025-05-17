@@ -1,0 +1,21 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/ColorPalettes/DeuteranopiaPalette.asset
+// Type: PatternCipher.UI.Accessibility.ColorPaletteDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.ColorPaletteDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> ColorPaletteDefinition.
+// 4. Name it "DeuteranopiaPalette".
+// 5. Configure its values:
+//    - Palette Name: "Deuteranopia Optimized"
+//    - Colors (List):
+//        - Define colors that are distinguishable for users with Deuteranopia.
+//        - Example: Avoid red-green combinations. Use blues, yellows, and distinct shades.
+//        - Name: "--color-primary", Value: (e.g., a specific shade of blue)
+//        - Name: "--color-secondary", Value: (e.g., a specific shade of yellow or orange)
+//        - Name: "--color-distinguish-1", Value: (Color A)
+//        - Name: "--color-distinguish-2", Value: (Color B, easily told apart from A by deuteranopes)
+//        - ... (remap default theme colors to be deuteranopia-friendly)
+
+// REQ-UIX-013: Defines a color palette optimized for Deuteranopia.

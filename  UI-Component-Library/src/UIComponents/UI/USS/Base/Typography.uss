@@ -1,0 +1,78 @@
+/* Typography.uss */
+/* Base typography styles for the application. */
+/* REQ-UIX-013.2: Text legibility and scaling. */
+
+/* Import shared variables if not automatically available in context */
+/* @import url("../Themes/SharedVariables.uss"); */ /* Not standard USS, but conceptually needed */
+
+/* Default text styles for the root or common containers */
+.unity-text-element { /* Targets TextElement and Label */
+    font-size: var(--font-size-normal);
+    color: var(--color-text-primary);
+    /* -unity-font: resource("PathToYourDefaultTextMeshProFontAsset"); */ /* Example for TMP default */
+    /* -unity-font-style: normal; (normal, bold, italic, bolditalic) */
+}
+
+/* Example heading styles */
+.h1 {
+    font-size: var(--font-size-xlarge);
+    -unity-font-style: bold;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.h2 {
+    font-size: var(--font-size-large);
+    -unity-font-style: bold;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.h3 {
+    font-size: var(--font-size-medium);
+    -unity-font-style: bold;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Paragraph or general text */
+.p, .text-normal {
+    font-size: var(--font-size-normal);
+    color: var(--color-text-primary);
+    line-height: 1.5; /* Example line height for readability */
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-muted { /* Even lighter text */
+    color: var(--color-text-secondary); /* Or a specific muted color variable */
+    opacity: 0.75;
+}
+
+.text-small {
+    font-size: var(--font-size-small);
+}
+
+.text-link {
+    color: var(--color-text-link);
+    text-decoration: underline;
+}
+.text-link:hover {
+    color: var(--color-primary); /* Darken or lighten link color on hover */
+}
+
+
+/* Ensure sufficient contrast for text against its background. */
+/* This is often handled by choosing appropriate --color-text-primary vs --color-background-primary, etc. */
+/* Text scaling will be handled by C# logic adjusting font-size or applying different classes/styles, */
+/* but having base sizes defined in USS variables helps. */
+
+/* Example for TextMeshPro specific font asset usage (if not globally set) */
+/*
+.my-custom-font-text {
+    -unity-font: resource("Fonts/MyCustomFont_SDF");
+    -unity-font-definition: resource("Fonts/MyCustomFont_SDF Definition"); // If needed
+}
+*/

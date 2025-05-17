@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/ColorPalettes/HighContrastPalette.asset
+// Type: PatternCipher.UI.Accessibility.ColorPaletteDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.ColorPaletteDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> ColorPaletteDefinition.
+// 4. Name it "HighContrastPalette".
+// 5. Configure its values:
+//    - Palette Name: "High Contrast"
+//    - Colors (List):
+//        - Name: "--color-primary", Value: (e.g., yellow #FFFF00 or bright blue #00FFFF for visibility on dark)
+//        - Name: "--color-background-primary", Value: (e.g., black #000000 or very dark grey)
+//        - Name: "--color-text-primary", Value: (e.g., white #FFFFFF or yellow #FFFF00)
+//        - Name: "--color-hc-border", Value: (e.g., white #FFFFFF or yellow #FFFF00)
+//        - ... (define colors that ensure WCAG AA or AAA contrast ratios)
+
+// REQ-UIX-013: Defines a high-contrast color palette.

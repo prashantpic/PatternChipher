@@ -1,0 +1,68 @@
+/* SharedVariables.uss */
+/* Define common variables for colors, fonts, spacing. */
+/* These can be overridden by more specific theme USS files or by dynamic properties. */
+/* REQ-UIX-013 */
+
+/* Example Color Palette Variables (Default - to be overridden by themes/palettes) */
+:root {
+    --color-primary: #007bff; /* Bright Blue */
+    --color-secondary: #6c757d; /* Grey */
+    --color-success: #28a745; /* Green */
+    --color-danger: #dc3545; /* Red */
+    --color-warning: #ffc107; /* Yellow */
+    --color-info: #17a2b8; /* Teal */
+    --color-light: #f8f9fa; /* Light Grey */
+    --color-dark: #343a40; /* Dark Grey */
+
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f1f1f1;
+    --color-surface: #ffffff; /* For cards, modals etc. */
+    
+    --color-text-primary: #212529; /* Dark grey/black */
+    --color-text-secondary: #6c757d; /* Lighter grey */
+    --color-text-on-primary-bg: #ffffff; /* Text on primary color background */
+    --color-text-on-dark-bg: #ffffff;
+    --color-text-link: var(--color-primary);
+    --color-text-disabled: #adb5bd;
+
+    /* Font Variables */
+    /* Ensure TextMeshPro Font Assets are set up and referenced correctly in Typography.uss or component USS */
+    /* These are for sizing and weighting if not directly using TMP settings per element */
+    --font-family-primary: "DefaultFont"; /* Placeholder, ideally points to a loaded TMP Font Asset or system font */
+    --font-size-root: 16px; /* Base font size for rem calculations if needed */
+    
+    --font-size-small: 12px;
+    --font-size-normal: 16px;
+    --font-size-medium: 20px;
+    --font-size-large: 24px;
+    --font-size-xlarge: 32px;
+
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+
+    /* Spacing Variables */
+    --spacing-unit: 8px;
+    --spacing-xs: calc(var(--spacing-unit) * 0.5);  /* 4px */
+    --spacing-sm: var(--spacing-unit);             /* 8px */
+    --spacing-md: calc(var(--spacing-unit) * 2);   /* 16px */
+    --spacing-lg: calc(var(--spacing-unit) * 3);   /* 24px */
+    --spacing-xl: calc(var(--spacing-unit) * 4);   /* 32px */
+
+    /* Border Variables */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-width: 1px;
+    --border-color: #dee2e6; /* Light grey border */
+
+    /* Focus Indicator (Accessibility REQ-UIX-013) */
+    --focus-outline-color: var(--color-primary);
+    --focus-outline-width: 2px;
+    --focus-outline-offset: 2px; /* How far the outline is from the element */
+    --focus-outline-style: solid; /* dotted, dashed, solid */
+
+    /* Tap Target Minimums (Accessibility REQ-UIX-013.3) */
+    /* These can be used in component USS to ensure min-width/height */
+    --tap-target-min-size: 48px; 
+}

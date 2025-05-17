@@ -1,0 +1,18 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Symbols/Symbol_Square_Blue_PatternA.asset
+// Type: PatternCipher.UI.Components.SymbolDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.SymbolDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Components -> SymbolDefinition.
+// 4. Name it "Symbol_Square_Blue_PatternA".
+// 5. Configure its values:
+//    - Symbol Id: "square_blue_pattern_a"
+//    - Base Color: Blue (e.g., #0000FF)
+//    - Icon Sprite Address: (Assign Addressable to a sprite of a square shape, potentially with a pattern overlay if not handled by TextureAddress)
+//    - Shape Data: "Square"
+//    - Texture Address: (Assign Addressable to a texture asset representing "PatternA", e.g., stripes, dots)
+//    - Accessibility Label: "Blue Square with Pattern A" (or more descriptive, e.g., "Blue Square with Stripes")
+
+// REQ-UIX-013, REQ-UIX-015: Example symbol emphasizing multiple visual cues for accessibility.

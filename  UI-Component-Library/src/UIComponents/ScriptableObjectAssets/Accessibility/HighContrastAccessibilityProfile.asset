@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/HighContrastAccessibilityProfile.asset
+// Type: PatternCipher.UI.Accessibility.AccessibilityProfile
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.AccessibilityProfile C# script (ScriptableObject) exists.
+// 2. In the Unity Editor, navigate to the target folder in the Project window.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> AccessibilityProfile.
+// 4. Name the created asset "HighContrastAccessibilityProfile".
+// 5. Configure its values in the Inspector:
+//    - Profile Name: "High Contrast"
+//    - Base Color Palette: (Assign HighContrastPalette.asset)
+//    - Color Vision Mode: HighContrast (or Normal, if HighContrastPalette is the primary mechanism)
+//    - Colorblind Palette Override: (null, or could be same as Base if mode is HighContrast)
+//    - Enable Reduced Motion: false (or true, user preference for HC often includes this)
+//    - Enable Haptics: true
+//    - Text Size Multiplier: 1.1 (or as desired for HC)
+
+// REQ-UIX-013: Defines settings for a high contrast accessibility mode.

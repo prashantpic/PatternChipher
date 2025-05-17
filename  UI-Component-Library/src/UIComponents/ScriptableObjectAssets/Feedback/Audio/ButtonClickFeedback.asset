@@ -1,0 +1,16 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Audio/ButtonClickFeedback.asset
+// Type: PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.AudioFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> AudioFeedbackDefinition.
+// 4. Name it "ButtonClickFeedback".
+// 5. Configure its values:
+//    - Audio Clip Address: (Assign an AddressableAssetReference to a short, satisfying click sound)
+//    - Volume: 0.7
+//    - Pitch Min: 0.95
+//    - Pitch Max: 1.05
+
+// REQ-6-003: Sound effect for UI button clicks.

@@ -1,0 +1,16 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Feedback/Visual/JuicyButtonPressAnimation.asset
+// Type: PatternCipher.UI.Components.Feedback.VisualFeedbackDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.Feedback.VisualFeedbackDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Feedback -> VisualFeedbackDefinition.
+// 4. Name it "JuicyButtonPressAnimation".
+// 5. Configure its values:
+//    - Animation Type: ScalePunch
+//    - DOTween Params: (e.g., JSON string: {"strength": -0.1, "vibrato": 2, "elasticity": 0.3} for a press-in effect)
+//    - Duration: 0.15
+//    - Particle Effect Address: (Optionally, assign a subtle particle effect Addressable)
+
+// REQ-6-007: Visual feedback for a 'juicy' button press.

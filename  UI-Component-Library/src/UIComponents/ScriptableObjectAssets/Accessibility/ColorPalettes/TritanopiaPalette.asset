@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/ColorPalettes/TritanopiaPalette.asset
+// Type: PatternCipher.UI.Accessibility.ColorPaletteDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.ColorPaletteDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> ColorPaletteDefinition.
+// 4. Name it "TritanopiaPalette".
+// 5. Configure its values:
+//    - Palette Name: "Tritanopia Optimized"
+//    - Colors (List):
+//        - Define colors that are distinguishable for users with Tritanopia.
+//        - Example: Blues and yellows are confused; use reds, pinks, greens, and distinct shades.
+//        - Name: "--color-primary", Value: (e.g., a specific shade of red or pink)
+//        - Name: "--color-secondary", Value: (e.g., a specific shade of green or teal)
+//        - ... (remap default theme colors)
+
+// REQ-UIX-013: Defines a color palette optimized for Tritanopia.

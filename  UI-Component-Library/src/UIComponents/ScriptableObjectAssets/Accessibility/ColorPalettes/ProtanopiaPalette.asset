@@ -1,0 +1,19 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Accessibility/ColorPalettes/ProtanopiaPalette.asset
+// Type: PatternCipher.UI.Accessibility.ColorPaletteDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Accessibility.ColorPaletteDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Accessibility -> ColorPaletteDefinition.
+// 4. Name it "ProtanopiaPalette".
+// 5. Configure its values:
+//    - Palette Name: "Protanopia Optimized"
+//    - Colors (List):
+//        - Define colors that are distinguishable for users with Protanopia.
+//        - Example: Reds will appear darker; avoid red-green. Blues and yellows often work well.
+//        - Name: "--color-primary", Value: (e.g., a specific shade of blue)
+//        - Name: "--color-secondary", Value: (e.g., a specific shade of yellow)
+//        - ... (remap default theme colors)
+
+// REQ-UIX-013: Defines a color palette optimized for Protanopia.

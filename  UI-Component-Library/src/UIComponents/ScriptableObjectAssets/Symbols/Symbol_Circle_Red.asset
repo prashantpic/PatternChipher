@@ -1,0 +1,18 @@
+// This is a placeholder for a Unity ScriptableObject asset file.
+// Path: src/UIComponents/ScriptableObjectAssets/Symbols/Symbol_Circle_Red.asset
+// Type: PatternCipher.UI.Components.SymbolDefinition
+
+// To create this file in Unity:
+// 1. Ensure the PatternCipher.UI.Components.SymbolDefinition C# script exists.
+// 2. In the Unity Editor, navigate to the target folder.
+// 3. Right-click -> Create -> PatternCipher -> UI -> Components -> SymbolDefinition.
+// 4. Name it "Symbol_Circle_Red".
+// 5. Configure its values:
+//    - Symbol Id: "circle_red"
+//    - Base Color: Red (e.g., #FF0000)
+//    - Icon Sprite Address: (Assign Addressable to a sprite of a simple circle, possibly white or transparent to be tinted by BaseColor)
+//    - Shape Data: "Circle" (string descriptor, or enum value)
+//    - Texture Address: (Optional: assign Addressable to a texture if the symbol uses a specific texture pattern beyond color/icon)
+//    - Accessibility Label: "Red Circle"
+
+// REQ-UIX-013, REQ-UIX-015: Example symbol definition.
