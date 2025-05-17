@@ -1,0 +1,82 @@
+// Firestore security rules for PatternCipher backend
+// REQ-9-010: Firestore Security Rules
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // User Profiles: Users can only read/write their own profile.
+    // Profile creation is handled by onUserCreate function, so direct create might be disallowed.
+    match /userProfiles/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId); // Create, Update, Delete
+      // Example: Allow create only if document doesn't exist or specific fields are set.
+      // allow create: if isAuthenticated() && isOwner(userId) && request.resource.data.createdAt == request.time;
+    }
+
+    // Cloud Save Data: Users can only read/write their own cloud save data.
+    // REQ-PDP-006, REQ-9-006
+    match /userCloudSaveData/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId); // Create, Update, Delete
+      // Example: Ensure clientTimestamp is present for conflict resolution logic.
+      // allow write: if isAuthenticated() && isOwner(userId) && request.resource.data.clientTimestamp is number;
+    }
+
+    // Achievements: Users can only read their own achievements. Updates handled by functions.
+    // REQ-9-004
+    match /userAchievements/{userId}/achievements/{achievementId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      // Writes should ideally be server-side only through functions.
+      allow write: if false; // Or specific conditions if client can initiate partial updates safely.
+    }
+    // Allow listing achievements for the owner
+    match /userAchievements/{userId} {
+       allow read, list: if isAuthenticated() && isOwner(userId);
+    }
+
+
+    // Leaderboards:
+    // REQ-9-002 (Score Submission API), REQ-9-009 (Score Validation), REQ-CPS-012 (Leaderboard Integrity)
+    // Score submissions are handled by a Cloud Function with server-side validation.
+    // Direct writes to leaderboards should be heavily restricted or disallowed.
+    match /leaderboards/{levelId}/scores/{scoreId} {
+      allow read: if true; // Publicly readable leaderboards
+      // Writes must be server-side or under strict validation here if allowed directly.
+      // For this design, score submission is via Cloud Function.
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid
+                      // Add basic structural checks here as a first line of defense.
+                      && request.resource.data.score is number
+                      && request.resource.data.levelId == levelId
+                      && request.resource.data.timestamp == request.time;
+                      // More complex validation is in Cloud Functions (score.validator.js)
+      allow update, delete: if false; // Scores should be immutable once submitted correctly or handled by admin processes.
+    }
+    // Allow listing scores for a leaderboard
+    match /leaderboards/{levelId} {
+       allow read, list: if true; // Publicly listable leaderboards
+    }
+
+    // Rate Limiting Data: Internal use by Cloud Functions.
+    // User should not be able to read/write this directly.
+    match /rateLimits/{userId}/actions/{actionDocId} {
+      allow read, write: if false; // Only accessible by admin SDK in functions
+    }
+
+    // Business Rules (if stored in Firestore, typically read-only for functions or admin access)
+    match /businessRules/{ruleId} {
+      allow read: if isAuthenticated(); // Or specific admin roles
+      allow write: if false; // Managed through deployments or admin tools
+    }
+  }
+}

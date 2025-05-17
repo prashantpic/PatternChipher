@@ -1,0 +1,30 @@
+{
+  "name": "firebase-backend",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions for PatternCipher backend.",
+  "main": "src/index.js",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.6.0",
+    "lodash": "^4.17.21",
+    "@google-cloud/logging": "^10.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "private": true,
+  "author": "PatternCipher AI Architect"
+}

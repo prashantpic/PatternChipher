@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "your-patterncipher-project-id-dev",
+    "staging": "your-patterncipher-project-id-staging",
+    "production": "your-patterncipher-project-id-prod"
+  }
+}
