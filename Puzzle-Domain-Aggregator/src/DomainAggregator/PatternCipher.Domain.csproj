@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>PatternCipher.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RuleEngine" Version="4.2.1" />
+    <PackageReference Include="Unity.Mathematics" Version="1.2.6" /> 
+    <!-- Assuming version 1.2.6 for Unity.Mathematics as it's common and not specified -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 
+      This path assumes that REPO-DOMAIN-AGGREGATOR (containing this project) 
+      and REPO-DATA-MODELS are sibling directories at some root level.
+      And that PatternCipher.Models.csproj is located at REPO-DATA-MODELS/src/PatternCipher.Models/PatternCipher.Models.csproj
+      
+      Structure example:
+      <SolutionOrWorkspaceRoot>/
+      ├── REPO-DOMAIN-AGGREGATOR/
+      │   └── src/
+      │       └── DomainAggregator/ (Location of this PatternCipher.Domain.csproj)
+      │           └── PatternCipher.Domain.csproj 
+      └── REPO-DATA-MODELS/
+          └── src/
+              └── PatternCipher.Models/
+                  └── PatternCipher.Models.csproj (The referenced project)
+    -->
+    <ProjectReference Include="../../../REPO-DATA-MODELS/src/PatternCipher.Models/PatternCipher.Models.csproj" />
+  </ItemGroup>
+
+</Project>
