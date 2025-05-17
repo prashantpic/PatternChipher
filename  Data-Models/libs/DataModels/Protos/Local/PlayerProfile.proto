@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package PatternCipher.ProtoModels.Local;
+
+option csharp_namespace = "PatternCipher.Models.Local";
+
+import "google/protobuf/timestamp.proto";
+
+// Root message for local player data.
+message PlayerProfile {
+  int32 save_schema_version = 1; // Version of this local save schema
+  string player_id = 2; // Unique identifier for the player (local UUID or Firebase UID if available)
+  map<string, LevelCompletionInfo> level_completion_status = 3; // Key: Level ID, Value: Completion info
+  PlayerSettingsInfo player_settings = 4; // Nested message for player settings
+  GameStateRecoveryInfo current_game_state_for_recovery = 5; // Nested message for interrupted game state
+  google.protobuf.Timestamp timestamp_of_last_save = 6; // Timestamp of the last successful local save
+  google.protobuf.Timestamp timestamp_of_first_app_open = 7; // Timestamp of first app launch (for analytics/lifecycle)
+  string app_version_at_last_save = 8; // App version when the last save occurred
+}
+
+// Details about a player's completion of a specific level.
+message LevelCompletionInfo {
+  int32 stars_earned = 1; // Number of stars earned (e.g., 0-3)
+  int64 high_score = 2; // Best score achieved on this level
+  int32 min_moves_taken = 3; // Minimum moves taken to complete (if applicable)
+  int32 min_time_seconds = 4; // Minimum time taken to complete (if applicable)
+  google.protobuf.Timestamp completed_timestamp = 5; // Timestamp when the level was first completed
+  bool is_completed = 6; // True if the level has been completed at least once
+}
+
+// Details about the player's configurable settings.
+message PlayerSettingsInfo {
+  float bgm_volume = 1;
+  float sfx_volume = 2;
+  bool bgm_muted = 3;
+  bool sfx_muted = 4;
+  string colorblind_mode = 5; // e.g., "none", "protanopia", "deuteranopia"
+  bool reduced_motion_enabled = 6;
+  bool haptic_feedback_enabled = 7;
+  string selected_language = 8; // e.g., "en-US", "fr-FR"
+  bool analytics_consent_given = 9;
+  bool cloud_save_enabled = 10;
+  map<string, bool> tutorial_completion_flags = 11; // Key: Tutorial step ID, Value: True if completed
+  bool larger_text_enabled = 12;
+}
+
+// Details required to restore an interrupted game session.
+message GameStateRecoveryInfo {
+  string active_level_id = 1; // ID of the level being played
+  bytes current_grid_state_serialized = 2; // Serialized representation of the grid state (implementation specific, e.g., byte array from domain model)
+  int32 moves_made = 3; // Moves made in the current session
+  int32 time_elapsed_seconds = 4; // Time elapsed in the current session
+  bool is_recovery_state_valid = 5; // Flag indicating if the recovery data is usable
+}

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package PatternCipher.ProtoModels.Cloud;
+
+option csharp_namespace = "PatternCipher.Models.Cloud";
+
+import "google/protobuf/timestamp.proto";
+
+// Represents a player's status for a specific achievement.
+message AchievementStatus {
+  string achievement_id = 1; // Unique identifier for the achievement (e.g., "first_level_complete", "earn_100_stars")
+  string player_id = 2; // Firebase UID
+  bool is_unlocked = 3; // True if the achievement has been unlocked
+  int32 current_progress = 4; // For multi-step achievements (e.g., "collect 50 stars")
+  int32 total_progress_needed = 5; // Target for multi-step achievements
+  google.protobuf.Timestamp unlocked_timestamp = 6; // Timestamp when achievement was unlocked (if is_unlocked is true)
+  google.protobuf.Timestamp created_at = 7; // Server-side timestamp of record creation
+  google.protobuf.Timestamp updated_at = 8; // Server-side timestamp of last update (progress or unlock)
+}

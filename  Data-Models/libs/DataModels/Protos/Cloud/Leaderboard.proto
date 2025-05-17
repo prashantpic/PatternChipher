@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package PatternCipher.ProtoModels.Cloud;
+
+option csharp_namespace = "PatternCipher.Models.Cloud";
+
+import "google/protobuf/timestamp.proto";
+
+// Represents a single score submission for a specific leaderboard.
+message LeaderboardEntry {
+  string leaderboard_id = 1; // e.g., 'level_001_score', 'global_stars'
+  string player_id = 2; // Firebase UID
+  string player_display_name = 3; // Player's display name at the time of submission
+  int64 score = 4; // The score value (e.g., points, stars, time - dependent on leaderboard_id)
+  int32 rank = 5; // Client-side display, server may recalculate
+  google.protobuf.Timestamp client_submission_timestamp = 6; // Timestamp from client when score was submitted
+  string metadata_json = 7; // Optional: For extra game-specific context like moves, time, if not part of score sort (JSON string)
+  google.protobuf.Timestamp created_at = 8; // Server-side timestamp of record creation
+  google.protobuf.Timestamp updated_at = 9; // Server-side timestamp of last update (if score is updated)
+}

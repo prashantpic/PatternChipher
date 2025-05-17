@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package PatternCipher.ProtoModels.Analytics;
+
+option csharp_namespace = "PatternCipher.Models.Analytics";
+
+import "google/protobuf/timestamp.proto";
+
+// Generic message structure for sending various game analytics events.
+message GameEvent {
+  string event_id = 1; // Unique ID for this event instance (e.g., GUID)
+  string event_name = 2; // e.g., 'level_started', 'hint_used', 'settings_changed'
+  google.protobuf.Timestamp event_timestamp = 3; // Client-side timestamp of event occurrence
+  string session_id = 4; // Current game session ID
+  string player_id = 5; // Locally generated or Firebase UID if available/consented
+  string event_schema_version = 6; // Version of this GameEvent schema, e.g., '1.0'
+  map<string, string> parameters = 7; // Key-value pairs for event-specific data (all values as strings)
+  DeviceInfo device_info = 8; // Information about the device
+  AppInfo app_info = 9; // Information about the application
+}
+
+// Details about the device sending the analytics event.
+message DeviceInfo {
+  string os_type = 1; // e.g., 'iOS', 'Android'
+  string os_version = 2;
+  string device_model = 3;
+  string screen_resolution = 4; // e.g., '1920x1080'
+}
+
+// Details about the application instance sending the analytics event.
+message AppInfo {
+  string app_version = 1; // e.g., '1.2.3'
+  string build_number = 2;
+  string language_code = 3; // e.g., 'en-US'
+}
