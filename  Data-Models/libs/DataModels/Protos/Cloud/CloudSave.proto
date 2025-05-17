@@ -8,8 +8,12 @@ import "google/protobuf/timestamp.proto";
 
 // Contains the versioned, serialized local player profile data for cloud storage.
 message CloudSaveData {
-  int32 cloud_save_data_object_version = 1; // Corresponds to Local.PlayerProfile.save_schema_version at time of serialization
-  bytes serialized_player_profile = 2; // Serialized Local.PlayerProfile data as bytes
-  google.protobuf.Timestamp last_sync_timestamp_client = 3; // Timestamp from client at last sync
-  string device_id_last_sync = 4; // Identifier of the device that performed the last sync
+  // Corresponds to Local.PlayerProfile.save_schema_version at time of serialization
+  int32 cloud_save_data_object_version = 1;
+  // Serialized Local.PlayerProfile data as bytes
+  bytes serialized_player_profile = 2;
+  // Timestamp from client at last sync
+  google.protobuf.Timestamp last_sync_timestamp_client = 3;
+  // Identifier of the device that performed the last sync
+  string device_id_last_sync = 4;
 }
