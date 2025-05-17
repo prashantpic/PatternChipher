@@ -1,146 +1,227 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System; // Required for Action
 
 namespace PatternCipher.Client.Presentation.Screens
 {
+    public enum ScreenType
+    {
+        // Define screen types, e.g., MainMenu, GameScreen, SettingsScreen, LevelSelectionScreen, etc.
+        MainMenu,
+        GameScreen,
+        Settings,
+        LevelSelection
+        // Add other screen types as needed
+    }
+
     public class ScreenManager : MonoBehaviour
     {
         [Header("Screen Prefabs")]
-        [SerializeField] private List<MonoBehaviour> screenPrefabs; // Ensure these implement IScreen
+        [SerializeField] private GameObject mainMenuScreenPrefab;
+        [SerializeField] private GameObject gameScreenPrefab;
+        [SerializeField] private GameObject settingsScreenPrefab;
+        // Add other screen prefabs here
 
-        private Dictionary<System.Type, IScreen> _registeredScreens = new Dictionary<System.Type, IScreen>();
-        private Stack<IScreen> _navigationHistory = new Stack<IScreen>();
-        private IScreen _currentScreen;
+        private Dictionary<ScreenType, GameObject> screenPrefabs = new Dictionary<ScreenType, GameObject>();
+        private Dictionary<ScreenType, IScreen> activeScreens = new Dictionary<ScreenType, IScreen>();
+        private Stack<IScreen> screenHistory = new Stack<IScreen>();
 
-        private static ScreenManager _instance;
-        public static ScreenManager Instance
+        private IScreen currentScreen;
+
+        public static ScreenManager Instance { get; private set; }
+
+        private void Awake()
         {
-            get
+            if (Instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = FindObjectOfType<ScreenManager>();
-                    if (_instance == null)
-                    {
-                        GameObject go = new GameObject("ScreenManager");
-                        _instance = go.AddComponent<ScreenManager>();
-                    }
-                }
-                return _instance;
-            }
-        }
-
-        void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-            InitializeScreens();
-        }
-
-        private void InitializeScreens()
-        {
-            foreach (var screenPrefab in screenPrefabs)
-            {
-                if (screenPrefab is IScreen screenInstance)
-                {
-                    var screenObject = Instantiate(screenPrefab.gameObject, transform);
-                    IScreen screen = screenObject.GetComponent<IScreen>();
-                    if (screen != null)
-                    {
-                        screenObject.SetActive(false); // Start with all screens hidden
-                        _registeredScreens[screen.GetType()] = screen;
-                         // The original instructions for IScreen in SDS mention Initialize(ScreenManager, object),
-                         // but BaseScreenController might handle this via Awake/Start.
-                         // For now, let's assume screens initialize themselves or BaseScreenController handles it.
-                    }
-                    else
-                    {
-                        Debug.LogError($"Prefab {screenPrefab.name} does not implement IScreen or have it as a component.");
-                    }
-                }
-                else
-                {
-                     Debug.LogError($"Prefab {screenPrefab.name} is not an IScreen.");
-                }
-            }
-        }
-
-        public void PushScreen<T>() where T : MonoBehaviour, IScreen
-        {
-            System.Type screenType = typeof(T);
-            if (_registeredScreens.TryGetValue(screenType, out IScreen screenToShow))
-            {
-                if (_currentScreen != null)
-                {
-                    _currentScreen.Hide();
-                    _navigationHistory.Push(_currentScreen);
-                }
-                _currentScreen = screenToShow;
-                _currentScreen.Show();
-                // _currentScreen.UpdateView(); // Or handle view updates within Show/OnShow
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                InitializeScreenPrefabs();
             }
             else
             {
-                Debug.LogError($"Screen type {screenType.Name} not registered or prefab not found.");
+                Destroy(gameObject);
+            }
+        }
+
+        private void InitializeScreenPrefabs()
+        {
+            if (mainMenuScreenPrefab != null) screenPrefabs[ScreenType.MainMenu] = mainMenuScreenPrefab;
+            if (gameScreenPrefab != null) screenPrefabs[ScreenType.GameScreen] = gameScreenPrefab;
+            if (settingsScreenPrefab != null) screenPrefabs[ScreenType.Settings] = settingsScreenPrefab;
+            // Initialize other prefabs
+        }
+
+        private IScreen GetOrInstantiateScreen(ScreenType screenType)
+        {
+            if (activeScreens.TryGetValue(screenType, out IScreen screenInstance) && screenInstance != null && (screenInstance as MonoBehaviour)?.gameObject != null)
+            {
+                return screenInstance;
+            }
+
+            if (screenPrefabs.TryGetValue(screenType, out GameObject prefab))
+            {
+                GameObject screenObject = Instantiate(prefab, transform); // Instantiate under ScreenManager
+                IScreen newScreen = screenObject.GetComponent<IScreen>();
+                if (newScreen != null)
+                {
+                    // Assuming IScreen has an Initialize method as per initial detailed spec
+                    // newScreen.Initialize(this, null); // Pass data if needed
+                    activeScreens[screenType] = newScreen;
+                    screenObject.SetActive(false); // Start hidden
+                    return newScreen;
+                }
+                else
+                {
+                    Debug.LogError($"Prefab for {screenType} does not have a component implementing IScreen.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Screen prefab for {screenType} not found.");
+            }
+            return null;
+        }
+
+
+        public void PushScreen<T>(object data = null) where T : MonoBehaviour, IScreen
+        {
+            ScreenType screenTypeToFind = ScreenTypeForComponent<T>();
+            if (screenTypeToFind == default && !IsKnownScreenType<T>()) // A bit of a hack, better to map T to ScreenType
+            {
+                 Debug.LogError($"Screen type for {typeof(T).Name} is not registered or inferable.");
+                 return;
+            }
+            if (screenTypeToFind == default) // Attempt to infer if not directly mapped
+            {
+                foreach(var kvp in screenPrefabs)
+                {
+                    if (kvp.Value.GetComponent<T>() != null)
+                    {
+                        screenTypeToFind = kvp.Key;
+                        break;
+                    }
+                }
+            }
+
+
+            IScreen newScreen = GetOrInstantiateScreen(screenTypeToFind);
+
+            if (newScreen != null)
+            {
+                if (currentScreen != null)
+                {
+                    currentScreen.Hide();
+                    screenHistory.Push(currentScreen);
+                }
+                currentScreen = newScreen;
+                // If IScreen has Initialize method:
+                // (currentScreen as PatternCipher.Client.Presentation.Screens.Common.BaseScreenController)?.InitializeScreen(this, data);
+                currentScreen.Show(); // Or pass data here if Show takes data
             }
         }
 
         public void PopScreen()
         {
-            if (_navigationHistory.Count > 0)
+            if (currentScreen != null)
             {
-                if (_currentScreen != null)
+                currentScreen.Hide();
+                if (activeScreens.ContainsValue(currentScreen) && currentScreen is MonoBehaviour mbScreen)
                 {
-                    _currentScreen.Hide();
+                     // Optionally destroy or just deactivate
+                     // Destroy(mbScreen.gameObject);
+                     // activeScreens.Remove(GetKeyByValue(activeScreens, currentScreen));
                 }
-                _currentScreen = _navigationHistory.Pop();
-                _currentScreen.Show();
-                // _currentScreen.UpdateView();
+            }
+
+            if (screenHistory.Count > 0)
+            {
+                currentScreen = screenHistory.Pop();
+                currentScreen.Show();
             }
             else
             {
-                Debug.LogWarning("Navigation history is empty. Cannot pop screen.");
+                currentScreen = null;
+                Debug.LogWarning("Screen history is empty. No screen to pop to.");
+                // Optionally, go to a default screen like MainMenu
+                // ShowOnlyScreen<MainMenuController>();
             }
         }
 
-        public void ShowOnlyScreen<T>() where T : MonoBehaviour, IScreen
+        public void ShowOnlyScreen<T>(object data = null) where T : MonoBehaviour, IScreen
         {
-            System.Type screenType = typeof(T);
-            if (_registeredScreens.TryGetValue(screenType, out IScreen screenToShow))
+            ScreenType screenTypeToFind = ScreenTypeForComponent<T>();
+             if (screenTypeToFind == default && !IsKnownScreenType<T>())
             {
-                if (_currentScreen != null && _currentScreen != screenToShow)
+                 Debug.LogError($"Screen type for {typeof(T).Name} is not registered or inferable.");
+                 return;
+            }
+            if (screenTypeToFind == default)
+            {
+                foreach(var kvp in screenPrefabs)
                 {
-                    _currentScreen.Hide();
+                    if (kvp.Value.GetComponent<T>() != null)
+                    {
+                        screenTypeToFind = kvp.Key;
+                        break;
+                    }
                 }
+            }
 
-                // Hide all other screens that might be in history but not currently active
-                foreach (var screen in _navigationHistory)
+            IScreen newScreen = GetOrInstantiateScreen(screenTypeToFind);
+
+            if (newScreen != null)
+            {
+                if (currentScreen != null)
                 {
-                    if (screen != screenToShow)
+                    currentScreen.Hide();
+                }
+                // Hide all other screens and clear history
+                foreach (var screen in activeScreens.Values)
+                {
+                    if (screen != newScreen && screen != null && (screen as MonoBehaviour)?.gameObject.activeSelf == true)
                     {
                         screen.Hide();
                     }
                 }
-                _navigationHistory.Clear();
+                screenHistory.Clear();
 
-                _currentScreen = screenToShow;
-                _currentScreen.Show();
-                // _currentScreen.UpdateView();
-            }
-            else
-            {
-                Debug.LogError($"Screen type {screenType.Name} not registered or prefab not found.");
+                currentScreen = newScreen;
+                // If IScreen has Initialize method:
+                // (currentScreen as PatternCipher.Client.Presentation.Screens.Common.BaseScreenController)?.InitializeScreen(this, data);
+                currentScreen.Show(); // Or pass data here
             }
         }
         
-        // For IScreen to call:
-        // public void NotifyScreenShown(IScreen screen) { /* Potentially handle analytics or state changes */ }
-        // public void NotifyScreenHidden(IScreen screen) { /* Potentially handle analytics or state changes */ }
+        // Helper to map Component Type T to ScreenType enum.
+        // This would ideally be more robust, e.g., attributes on IScreen implementations.
+        private ScreenType ScreenTypeForComponent<T>() where T : IScreen
+        {
+            if (typeof(T).Name.Contains("MainMenu")) return ScreenType.MainMenu;
+            if (typeof(T).Name.Contains("GameScreen")) return ScreenType.GameScreen;
+            if (typeof(T).Name.Contains("Settings")) return ScreenType.Settings;
+            // Add more mappings
+            return default(ScreenType); // Or throw an error
+        }
+         private bool IsKnownScreenType<T>() where T : IScreen
+        {
+            // A simple check. Could be improved with a registration system.
+            return typeof(T).Name.Contains("MainMenu") ||
+                   typeof(T).Name.Contains("GameScreen") ||
+                   typeof(T).Name.Contains("Settings");
+        }
+
+        // Helper to get key by value, useful if you need to remove from activeScreens by IScreen instance
+        private ScreenType GetKeyByValue(Dictionary<ScreenType, IScreen> dict, IScreen value)
+        {
+            foreach (var pair in dict)
+            {
+                if (pair.Value.Equals(value))
+                {
+                    return pair.Key;
+                }
+            }
+            return default(ScreenType); // Or throw exception
+        }
     }
 }

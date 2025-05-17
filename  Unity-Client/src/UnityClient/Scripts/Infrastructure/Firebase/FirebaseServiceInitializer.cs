@@ -1,79 +1,133 @@
 using System.Threading.Tasks;
-using UnityEngine;
 using Firebase;
-// Add specific Firebase SDKs you intend to initialize early, e.g.:
-// using Firebase.Auth;
-// using Firebase.RemoteConfig;
-// using Firebase.Analytics;
-// using Firebase.Firestore;
-// using Firebase.Crashlytics;
+using Firebase.Analytics;
+using Firebase.Auth;
+using Firebase.Firestore;
+using Firebase.RemoteConfig;
+using UnityEngine; // For Debug
 
 namespace PatternCipher.Client.Infrastructure.Firebase
 {
     public class FirebaseServiceInitializer
     {
-        private bool _isFirebaseInitialized = false;
-        public bool IsFirebaseInitialized => _isFirebaseInitialized;
+        public bool IsFirebaseInitialized { get; private set; } = false;
 
         public async Task InitializeFirebaseAsync()
         {
-            if (_isFirebaseInitialized)
+            FirebaseApp app = null;
+            try
             {
-                Debug.Log("Firebase already initialized.");
-                return;
+                var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
+                if (dependencyStatus == DependencyStatus.Available)
+                {
+                    // Create and hold a reference to your FirebaseApp,
+                    // otherwise it will be garbage collected.
+                    app = FirebaseApp.DefaultInstance;
+
+                    // TODO: Set up Firebase services as needed
+                    InitializeAnalytics();
+                    InitializeAuth();
+                    InitializeFirestore();
+                    InitializeRemoteConfig();
+                    // InitializeCrashlytics(); // If using Crashlytics
+
+                    IsFirebaseInitialized = true;
+                    Debug.Log("Firebase initialized successfully.");
+                }
+                else
+                {
+                    Debug.LogError($"Could not resolve all Firebase dependencies: {dependencyStatus}");
+                    IsFirebaseInitialized = false;
+                }
             }
-
-            Debug.Log("Initializing Firebase...");
-            DependencyStatus dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
-
-            if (dependencyStatus == DependencyStatus.Available)
+            catch (System.Exception e)
             {
-                // FirebaseApp app = FirebaseApp.DefaultInstance; // Get the default FirebaseApp instance.
-                _isFirebaseInitialized = true;
-                Debug.Log("Firebase initialized successfully.");
-
-                // Initialize other Firebase services here as needed
-                // Example: InitializeRemoteConfigDefaults();
-                // Example: InitializeAnalyticsSettings();
-                // Example: FirebaseCrashlytics.SetCrashlyticsCollectionEnabled(true); // Or based on consent
-
-                // Set a flag or invoke an event to signal that Firebase is ready
-                // GlobalEventBus.Instance.Publish(new FirebaseInitializedEvent());
-            }
-            else
-            {
-                _isFirebaseInitialized = false;
-                Debug.LogError($"Could not resolve all Firebase dependencies: {dependencyStatus}");
-                // Handle the error appropriately, e.g., disable Firebase-dependent features or inform the user.
+                Debug.LogError($"Exception during Firebase initialization: {e.Message}");
+                IsFirebaseInitialized = false;
             }
         }
 
-        // Example: Method to set Remote Config defaults (called after FirebaseApp is initialized)
-        // private void InitializeRemoteConfigDefaults()
-        // {
-        //     System.Collections.Generic.Dictionary<string, object> defaults =
-        //         new System.Collections.Generic.Dictionary<string, object>();
-        //
-        //     // Add your Remote Config default values here
-        //     defaults.Add("enable_feature_x", false);
-        //     defaults.Add("welcome_message", "Hello from Remote Config!");
-        //
-        //     Firebase.RemoteConfig.FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaults)
-        //         .ContinueWithOnMainThread(task => {
-        //             if (task.IsCompleted) {
-        //                 Debug.Log("Remote Config defaults set.");
-        //             } else {
-        //                 Debug.LogError("Failed to set Remote Config defaults.");
-        //             }
-        //         });
-        // }
+        private void InitializeAnalytics()
+        {
+            // Firebase Analytics is initialized automatically if the package is present.
+            // You can set default consent here if needed, or control collection later.
+            // FirebaseAnalytics.SetAnalyticsCollectionEnabled(true); // Example
+            Debug.Log("Firebase Analytics ready.");
+        }
 
-        // Example: Method to set initial Analytics settings (called after FirebaseApp is initialized)
-        // private void InitializeAnalyticsSettings()
+        private void InitializeAuth()
+        {
+            // Firebase Auth instance can be accessed via FirebaseAuth.DefaultInstance
+            // You might want to attach state changed listeners here or in a dedicated Auth service
+            // FirebaseAuth.DefaultInstance.StateChanged += AuthStateChanged;
+            Debug.Log("Firebase Auth ready.");
+        }
+
+        private void InitializeFirestore()
+        {
+            // Firebase Firestore instance can be accessed via FirebaseFirestore.DefaultInstance
+            // You might want to configure settings like persistence or timestamps here.
+            // FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
+            // var settings = db.Settings;
+            // settings.PersistenceEnabled = true; // Example for offline persistence
+            // settings.AreTimestampsInSnapshotsEnabled = true;
+            // db.Settings = settings;
+            Debug.Log("Firebase Firestore ready.");
+        }
+
+        private async void InitializeRemoteConfig()
+        {
+            // Set default Remote Config values.
+            // These are used if the Riche Config data isn't fetched successfully,
+            // or if the app is running offline.
+            var defaults = new System.Collections.Generic.Dictionary<string, object>();
+            // Example:
+            // defaults.Add("welcome_message", "Welcome to our game!");
+            // defaults.Add("feature_flag_new_level", false);
+            
+            await FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaults);
+            Debug.Log("Firebase Remote Config defaults set.");
+
+            // Fetch and activate can be done here or later by a dedicated service.
+            // FetchAndActivateRemoteConfig(); 
+        }
+
+        // Example method, can be called by RemoteConfigService
+        public async Task FetchAndActivateRemoteConfig()
+        {
+            if (!IsFirebaseInitialized) return;
+            try
+            {
+                Debug.Log("Fetching Remote Config data...");
+                await FirebaseRemoteConfig.DefaultInstance.FetchAsync(System.TimeSpan.Zero); // Fetch with no cache expiry for testing
+                bool activated = await FirebaseRemoteConfig.DefaultInstance.ActivateAsync();
+                if (activated)
+                {
+                    Debug.Log("Remote Config fetched and activated.");
+                }
+                else
+                {
+                    Debug.Log("Remote Config fetched but no new values to activate.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error fetching or activating Remote Config: {e.Message}");
+            }
+        }
+
+        // Placeholder for AuthStateChanged event handler if used
+        // private void AuthStateChanged(object sender, System.EventArgs eventArgs)
         // {
-        //     // Set user consent for analytics data collection (e.g., based on GDPR or other privacy settings)
-        //     // Firebase.Analytics.FirebaseAnalytics.SetAnalyticsCollectionEnabled(true); // Or false based on consent
-        //     Debug.Log("Analytics collection enabled state set (example).");
+        //     FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        //     if (user != null)
+        //     {
+        //         Debug.Log($"Firebase Auth: User is signed in with ID: {user.UserId}");
+        //     }
+        //     else
+        //     {
+        //         Debug.Log("Firebase Auth: User is signed out.");
+        //     }
         // }
     }
 }

@@ -2,20 +2,33 @@ using UnityEngine;
 
 namespace PatternCipher.Client.Presentation.Screens.Common
 {
+    // Define IScreen based on initial prompt's instructions for IScreen.cs
+    // This would normally be in its own file: Presentation/Screens/IScreen.cs
+    public interface IScreen
+    {
+        void Show();
+        void Hide();
+        void UpdateView(); // As per prompt's instruction for IScreen
+
+        // Methods from the more detailed spec for IScreen (can be added if needed)
+        // void Initialize(ScreenManager manager, object data = null);
+        // void OnScreenBecameActive();
+        // void OnScreenBecameInactive();
+    }
+
     public abstract class BaseScreenController : MonoBehaviour, IScreen
     {
+        [Header("Screen Configuration")]
         [SerializeField]
         protected GameObject screenRoot;
 
         protected ScreenManager screenManager;
+        protected object screenData;
 
-        protected virtual void Awake()
+        public virtual void InitializeScreen(ScreenManager manager, object data = null)
         {
-            if (screenRoot == null)
-            {
-                screenRoot = this.gameObject; // Default to this game object if not set
-            }
-            screenManager = ScreenManager.Instance;
+            this.screenManager = manager;
+            this.screenData = data;
         }
 
         public virtual void Show()
@@ -23,6 +36,10 @@ namespace PatternCipher.Client.Presentation.Screens.Common
             if (screenRoot != null)
             {
                 screenRoot.SetActive(true);
+            }
+            else
+            {
+                gameObject.SetActive(true);
             }
             OnShow();
         }
@@ -34,37 +51,42 @@ namespace PatternCipher.Client.Presentation.Screens.Common
             {
                 screenRoot.SetActive(false);
             }
+            else
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         public virtual void UpdateView()
         {
+            // This method is called to refresh the view, potentially with new data
             OnUpdateView();
         }
 
-        protected abstract void OnShow();
-        protected abstract void OnHide();
-        protected abstract void OnUpdateView();
-
-        // As per SDS for IScreen interface, added Initialize methods
-        // However, the SDS for ScreenManager does not explicitly call Initialize.
-        // BaseScreenController's Awake can fetch ScreenManager.Instance.
-        // Data passing can be done via a Show(object data) method if needed.
-        public virtual void Initialize(ScreenManager manager, object data = null)
+        protected virtual void OnShow()
         {
-            this.screenManager = manager;
-            // Process data if provided
+            // Template method: Called when the screen is shown.
+            // Derived classes override this for specific show logic.
         }
 
-        // From IScreen interface in SDS (different from original prompt's Show(), Hide(), UpdateView() for IScreen)
-        // The original SDS for IScreen had:
-        // void Initialize(ScreenManager manager, object data = null)
-        // void Show()
-        // void Hide()
-        // void OnScreenBecameActive()
-        // void OnScreenBecameInactive()
-        // The prompt for BaseScreenController says "Implement the IScreen methods (Show, Hide, UpdateView)"
-        // I will stick to Show, Hide, UpdateView as per BaseScreenController's prompt.
-        // If OnScreenBecameActive/Inactive are needed, they can be added.
-        // For now, aligning with the specific instructions for BaseScreenController.
+        protected virtual void OnHide()
+        {
+            // Template method: Called when the screen is hidden.
+            // Derived classes override this for specific hide logic.
+        }
+
+        protected virtual void OnUpdateView()
+        {
+            // Template method: Called when the screen's view needs to be updated.
+            // Derived classes override this for specific update logic.
+        }
+
+        protected virtual void Awake()
+        {
+            if (screenRoot == null)
+            {
+                screenRoot = gameObject; // Default to this GameObject if not set
+            }
+        }
     }
 }

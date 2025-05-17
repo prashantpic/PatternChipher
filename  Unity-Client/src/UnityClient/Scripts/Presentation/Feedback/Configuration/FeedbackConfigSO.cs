@@ -1,88 +1,67 @@
 using UnityEngine;
-using DG.Tweening; // For Ease enum
-using System.Collections.Generic;
+using DG.Tweening; // Required for Ease
+using System.Collections.Generic; // Required for List
 
 namespace PatternCipher.Client.Presentation.Feedback.Configuration
 {
-    [CreateAssetMenu(fileName = "FeedbackConfig", menuName = "PatternCipher/Feedback Configuration", order = 1)]
+    // Define placeholder for FeedbackType if not defined elsewhere yet
+    // This would typically be in a shared enums file or Domain.Events
+    public enum FeedbackType
+    {
+        TapSuccess,
+        TapInvalid,
+        SwapSuccess,
+        SwapInvalid,
+        MatchFound,
+        TileRemoved,
+        LevelCompleteWin,
+        LevelCompleteLose
+        // Add more feedback types as needed
+    }
+
+    [System.Serializable]
+    public class VisualFeedbackSettings
+    {
+        public FeedbackType Type;
+        public float AnimationDuration = 0.5f;
+        public Ease AnimationEase = Ease.OutQuad;
+        public GameObject ParticleEffectPrefab;
+        public Vector3 ParticleOffset = Vector3.zero;
+        // Screen Shake specific
+        public bool UseScreenShake = false;
+        public float ShakeDuration = 0.1f;
+        public float ShakeStrength = 0.1f;
+        public int ShakeVibrato = 10;
+        public float ShakeRandomness = 90f;
+    }
+
+    [System.Serializable]
+    public class AudioFeedbackSettings
+    {
+        public FeedbackType Type;
+        public AudioClip SoundClip;
+        [Range(0f, 1f)]
+        public float Volume = 1.0f;
+    }
+
+    [CreateAssetMenu(fileName = "FeedbackConfig", menuName = "PatternCipher/Configuration/Feedback Config")]
     public class FeedbackConfigSO : ScriptableObject
     {
-        [Header("Tile Interaction Feedback")]
-        public TileFeedbackSettings tapSuccessFeedback;
-        public TileFeedbackSettings tapInvalidFeedback;
-        public TileFeedbackSettings swapSuccessFeedback;
-        public TileFeedbackSettings swapInvalidFeedback;
-        public TileFeedbackSettings matchFoundFeedback;
-        public TileFeedbackSettings tileRemovedFeedback;
+        [Header("Visual Feedback Configurations")]
+        public List<VisualFeedbackSettings> VisualFeedbacks;
 
-        [Header("Level Events Feedback")]
-        public LevelEventFeedbackSettings levelCompleteWinFeedback;
-        public LevelEventFeedbackSettings levelCompleteLoseFeedback;
-        public LevelEventFeedbackSettings hintUsedFeedback;
+        [Header("Audio Feedback Configurations")]
+        public List<AudioFeedbackSettings> AudioFeedbacks;
 
-        [Header("General UI Feedback")]
-        public UIButtonFeedbackSettings defaultButtonPressFeedback;
+        // Helper methods to get specific feedback settings
+        public VisualFeedbackSettings GetVisualFeedback(FeedbackType type)
+        {
+            return VisualFeedbacks.Find(vf => vf.Type == type);
+        }
 
-        [Header("Screen Shake Parameters")]
-        public ScreenShakeParams minorShake;
-        public ScreenShakeParams majorShake;
-
-        // Add other specific feedback configurations as needed
-    }
-
-    [System.Serializable]
-    public class TileFeedbackSettings
-    {
-        [Header("Visuals")]
-        public bool useAnimation = true;
-        public float animationDuration = 0.3f;
-        public Ease animationEase = Ease.OutQuad;
-        public Vector3 animationScaleTo = new Vector3(1.1f, 1.1f, 1.1f);
-        public GameObject particleEffectPrefab;
-
-        [Header("Audio")]
-        public AudioClip soundEffect;
-        [Range(0f, 1f)] public float sfxVolume = 1.0f;
-
-        [Header("Haptics (if applicable)")]
-        public bool triggerHaptics = false;
-        // public HapticType hapticType; // Define HapticType enum if used
-    }
-
-    [System.Serializable]
-    public class LevelEventFeedbackSettings
-    {
-        [Header("Visuals")]
-        public GameObject fullScreenParticleEffectPrefab;
-        public float effectDuration = 1.5f;
-
-        [Header("Audio")]
-        public AudioClip soundEffect;
-        [Range(0f, 1f)] public float sfxVolume = 1.0f;
-        public AudioClip musicStinger; // Optional music change or stinger
-    }
-
-    [System.Serializable]
-    public class UIButtonFeedbackSettings
-    {
-        [Header("Visuals - Animation")]
-        public bool animateOnClick = true;
-        public float animationDuration = 0.1f;
-        public Ease animationEase = Ease.OutQuad;
-        public Vector3 scaleOnClick = new Vector3(0.95f, 0.95f, 1f);
-
-        [Header("Audio")]
-        public AudioClip clickSound;
-        [Range(0f, 1f)] public float sfxVolume = 0.8f;
-    }
-    
-    [System.Serializable]
-    public class ScreenShakeParams
-    {
-        public float duration = 0.2f;
-        public float strength = 0.1f;
-        public int vibrato = 10;
-        public float randomness = 90f;
-        public bool fadeOut = true;
+        public AudioFeedbackSettings GetAudioFeedback(FeedbackType type)
+        {
+            return AudioFeedbacks.Find(af => af.Type == type);
+        }
     }
 }

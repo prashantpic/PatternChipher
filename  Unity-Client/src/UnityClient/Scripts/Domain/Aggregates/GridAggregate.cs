@@ -1,100 +1,122 @@
 using System.Collections.Generic;
+using System.Linq;
 using PatternCipher.Client.Domain.Entities;
 using PatternCipher.Client.Domain.ValueObjects;
-using PatternCipher.Client.Domain.Events;
-using PatternCipher.Client.Core.Events; // For GlobalEventBus
+using PatternCipher.Client.Core.Events; // For GlobalEventBus and GameEvent
+using PatternCipher.Client.Domain.Events; // For domain-specific events
 using PatternCipher.Client.Domain.Exceptions; // For InvalidGridOperationException
+using UnityEngine; // For Debug.Log, remove if not desired in pure domain logic
+
 
 namespace PatternCipher.Client.Domain.Aggregates
 {
     public class GridAggregate
     {
         public GridDimensions Dimensions { get; private set; }
-        private Dictionary<GridPosition, Tile> _tiles; // Using Dictionary for quick access by GridPosition
+        private Dictionary<GridPosition, Tile> tiles; // Using Dictionary for easy lookup by GridPosition
 
-        // Constructor requires initial tiles and dimensions.
-        public GridAggregate(GridDimensions dimensions, IEnumerable<Tile> initialTiles)
+        // Consider injecting GlobalEventBus if events are published from here
+        private GlobalEventBus eventBus;
+
+        public GridAggregate(GridDimensions dimensions, IEnumerable<Tile> initialTiles, GlobalEventBus bus)
         {
             Dimensions = dimensions;
-            _tiles = new Dictionary<GridPosition, Tile>();
-            foreach (var tile in initialTiles)
+            tiles = new Dictionary<GridPosition, Tile>();
+            eventBus = bus;
+
+            if (initialTiles != null)
             {
-                if (Dimensions.IsValidPosition(tile.Position))
+                foreach (var tile in initialTiles)
                 {
-                    _tiles[tile.Position] = tile;
+                    if (Dimensions.IsValidPosition(tile.Position))
+                    {
+                        tiles[tile.Position] = tile;
+                    }
+                    else
+                    {
+                        // Handle error: tile position out of bounds
+                        Debug.LogError($"Tile at {tile.Position} is out of grid bounds {Dimensions}.");
+                    }
                 }
-                else
+            }
+             // Fill any missing spots with empty/default tiles if necessary, or ensure initialTiles covers all.
+            for(int r = 0; r < Dimensions.Rows; r++)
+            {
+                for(int c = 0; c < Dimensions.Columns; c++)
                 {
-                    // Handle error: tile position out of bounds
-                    // This might throw an exception or log an error depending on design.
-                    throw new System.ArgumentException($"Tile position {tile.Position} is out of bounds for grid dimensions {dimensions}.");
+                    var currentPos = new GridPosition(r,c);
+                    if(!tiles.ContainsKey(currentPos))
+                    {
+                        // Decide on default tile creation, e.g., an "Empty" symbol or null.
+                        // For now, let's assume initialTiles is comprehensive or this is handled by generation.
+                        // tiles[currentPos] = new Tile(currentPos, "EMPTY_SYMBOL_ID", TileState.Normal);
+                    }
                 }
             }
         }
 
         public Tile GetTile(GridPosition position)
         {
-            _tiles.TryGetValue(position, out Tile tile);
-            return tile; // Returns null if not found
+            if (tiles.TryGetValue(position, out Tile tile))
+            {
+                return tile;
+            }
+            // Consider returning a NullObjectTile or throwing if position is invalid/empty
+            return null;
         }
 
         public IEnumerable<Tile> GetAllTiles()
         {
-            return _tiles.Values;
-        }
-        
-        public void UpdateTile(Tile tile)
-        {
-            if (tile == null || !_tiles.ContainsKey(tile.Position))
-            {
-                // Log error or throw if trying to update a non-existent tile
-                return;
-            }
-            _tiles[tile.Position] = tile;
+            return tiles.Values.ToList().AsReadOnly();
         }
 
-
-        // Example operation: ApplyTap
-        // The GridManagementService would call this after validating context.
-        public bool ApplyTap(GridPosition position)
+        public void ApplyTap(GridPosition position)
         {
             if (!Dimensions.IsValidPosition(position))
             {
-                throw new InvalidGridOperationException($"Tap position {position} is invalid.");
+                eventBus?.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.TapInvalid, false));
+                throw new InvalidGridOperationException($"Tap position {position} is outside grid dimensions.");
             }
 
             Tile tappedTile = GetTile(position);
-            if (tappedTile == null || tappedTile.State == TileState.Locked) // Assuming TileState enum
+            if (tappedTile == null || tappedTile.State == TileState.Locked || tappedTile.State == TileState.Empty) // Assuming Empty state
             {
-                GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.Failure, false)); // Assuming these event types exist
-                return false; // Tap had no effect or was invalid
+                eventBus?.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.TapInvalid, false));
+                // Optionally, throw new InvalidGridOperationException($"Cannot tap tile at {position}. It is null, locked or empty.");
+                return;
             }
 
-            // --- Core tap logic here ---
-            // Example: Change tile state, trigger special effect, etc.
-            // tappedTile.SetState(TileState.Selected); // Assuming SetState method and TileState enum
-            // UpdateTile(tappedTile);
-
-            // Publish feedback event
-            GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.Success, true));
+            // --- Core Tap Logic Placeholder ---
+            // Example: If tile is special, activate it. If it's part of a selection, process it.
+            // For a simple match game, tap might not do much on its own without a second tap or swap.
+            // Let's assume tap highlights the tile.
+            if (tappedTile.State == TileState.Normal)
+            {
+                tappedTile.SetState(TileState.Selected);
+                eventBus?.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.TapSuccess, true)); // Or a specific "Selected" feedback
+            }
+            else if (tappedTile.State == TileState.Selected)
+            {
+                tappedTile.SetState(TileState.Normal);
+                 eventBus?.Publish(new TileInteractionFeedbackEvent(position, InteractionType.Tap, FeedbackType.TapSuccess, true)); // Or a specific "Deselected" feedback
+            }
+            // --- End Core Tap Logic Placeholder ---
             
-            // Potentially publish PlayerMoveMadeEvent if tap constitutes a "move"
-            // GlobalEventBus.Instance.Publish(new PlayerMoveMadeEvent(new PlayerMove(position), true, 0, 1)); // Assuming PlayerMove struct
-
-            return true; // Tap was successful
+            // Example: PlayerMoveMadeEvent for a tap action, if taps are considered moves
+            // eventBus?.Publish(new PlayerMoveMadeEvent(new PlayerMove(MoveType.Tap, position), true, 0, 1));
         }
 
-        // Example operation: ApplySwap
-        public bool ApplySwap(GridPosition pos1, GridPosition pos2)
+        public void ApplySwap(GridPosition pos1, GridPosition pos2)
         {
             if (!Dimensions.IsValidPosition(pos1) || !Dimensions.IsValidPosition(pos2))
             {
-                throw new InvalidGridOperationException("One or both swap positions are invalid.");
+                eventBus?.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.SwapInvalid, false));
+                throw new InvalidGridOperationException("One or both swap positions are outside grid dimensions.");
             }
-            if (!pos1.IsAdjacentTo(pos2)) // Assuming GridPosition has IsAdjacentTo
+            if (!pos1.IsAdjacentTo(pos2)) // Assuming IsAdjacentTo is defined in GridPosition
             {
-                GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.Failure, false)); // And pos2
-                return false; // Cannot swap non-adjacent tiles
+                eventBus?.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.SwapInvalid, false));
+                throw new InvalidGridOperationException("Tiles must be adjacent to be swapped.");
             }
 
             Tile tile1 = GetTile(pos1);
@@ -102,139 +124,216 @@ namespace PatternCipher.Client.Domain.Aggregates
 
             if (tile1 == null || tile2 == null || tile1.State == TileState.Locked || tile2.State == TileState.Locked)
             {
-                GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.Failure, false));
-                return false; // Cannot swap locked or non-existent tiles
+                eventBus?.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.SwapInvalid, false));
+                // Optionally, throw new InvalidGridOperationException("Cannot swap locked or non-existent tiles.");
+                return;
             }
 
-            // --- Core swap logic: Swap symbols or entire tiles ---
-            string tempSymbolId = tile1.SymbolId;
-            // tile1.ChangeSymbol(tile2.SymbolId); // Assuming Tile has ChangeSymbol
-            // tile2.ChangeSymbol(tempSymbolId);
-            // This is simplified; actual tile symbol/data swap logic would be here.
-            // For now, let's just swap them in our dictionary (by swapping their full Tile objects after adjusting positions)
+            // Perform the swap in the dictionary
+            tiles[pos1] = tile2;
+            tiles[pos2] = tile1;
+
+            // Update the positions within the Tile objects themselves
+            tile1.UpdatePosition(pos2);
+            tile2.UpdatePosition(pos1);
             
-            // Create new tile instances with swapped SymbolIds but original positions and states for a moment
-            var newTile1AtPos1 = new Tile(tile1.Position, tile2.SymbolId, tile1.State); // Tile at pos1 gets symbol of tile2
-            var newTile2AtPos2 = new Tile(tile2.Position, tile1.SymbolId, tile2.State); // Tile at pos2 gets symbol of tile1
+            // --- Swap Outcome Logic Placeholder ---
+            // After swapping, check for matches. If no matches, potentially swap back or penalize.
+            // For now, assume swap is always "successful" in terms of execution. Match checking is separate.
+            // --- End Swap Outcome Logic Placeholder ---
 
-            _tiles[pos1] = newTile1AtPos1;
-            _tiles[pos2] = newTile2AtPos2;
-
-
-            // Publish feedback
-            GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.Success, true));
-            GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(pos2, InteractionType.Swap, FeedbackType.Success, true));
-            
-            // Potentially publish PlayerMoveMadeEvent
-            // GlobalEventBus.Instance.Publish(new PlayerMoveMadeEvent(new PlayerMove(pos1, pos2), true, 0, 2));
-
-            return true;
+            eventBus?.Publish(new TileInteractionFeedbackEvent(pos1, InteractionType.Swap, FeedbackType.SwapSuccess, true, pos2));
+            // PlayerMove would need to be defined
+            // eventBus?.Publish(new PlayerMoveMadeEvent(new PlayerMove(MoveType.Swap, pos1, pos2), true, 0, 2));
         }
-
-        // Placeholder for FindMatches. Actual logic is complex.
+        
         public List<List<GridPosition>> FindMatches()
         {
             var allMatches = new List<List<GridPosition>>();
-            // --- Match finding logic (e.g., 3+ in a row/column) ---
-            // Iterate through _tiles, check neighbors, identify match groups.
-            // This is highly game-specific.
-            return allMatches;
-        }
+            if (tiles == null || tiles.Count == 0) return allMatches;
 
-        // Placeholder for ProcessMatches.
-        public int ProcessMatches(List<List<GridPosition>> matches)
-        {
-            int scoreFromMatches = 0;
-            if (matches == null || matches.Count == 0) return 0;
+            bool[,] visited = new bool[Dimensions.Rows, Dimensions.Columns];
 
-            foreach (var matchGroup in matches)
+            for (int r = 0; r < Dimensions.Rows; r++)
             {
-                foreach (var pos in matchGroup)
+                for (int c = 0; c < Dimensions.Columns; c++)
                 {
-                    Tile matchedTile = GetTile(pos);
-                    if (matchedTile != null)
-                    {
-                        // Mark tile for removal or change its state
-                        // matchedTile.SetState(TileState.Matched);
-                        // For actual removal, might nullify it or use a placeholder "empty" symbol
-                        _tiles[pos] = new Tile(pos, null, TileState.Empty); // Example: "Empty" symbol ID and state
+                    GridPosition currentPos = new GridPosition(r, c);
+                    Tile currentTile = GetTile(currentPos);
 
-                        scoreFromMatches += 10; // Example scoring
-                        GlobalEventBus.Instance.Publish(new TileInteractionFeedbackEvent(pos, InteractionType.Match, FeedbackType.Success, true));
+                    if (currentTile == null || currentTile.State == TileState.Empty || string.IsNullOrEmpty(currentTile.SymbolId) || currentTile.SymbolId == "EMPTY_SYMBOL_ID") continue;
+                    
+                    // Horizontal matches
+                    if (c <= Dimensions.Columns - 3) // Check bounds for a match of 3
+                    {
+                        Tile tilePlus1 = GetTile(new GridPosition(r, c + 1));
+                        Tile tilePlus2 = GetTile(new GridPosition(r, c + 2));
+                        if (tilePlus1 != null && tilePlus2 != null &&
+                            currentTile.SymbolId == tilePlus1.SymbolId && currentTile.SymbolId == tilePlus2.SymbolId)
+                        {
+                            var match = new List<GridPosition> { currentPos, new GridPosition(r,c+1), new GridPosition(r,c+2) };
+                            // Extend match if more than 3
+                            for(int k = c + 3; k < Dimensions.Columns; k++)
+                            {
+                                Tile nextTile = GetTile(new GridPosition(r,k));
+                                if(nextTile != null && nextTile.SymbolId == currentTile.SymbolId) match.Add(new GridPosition(r,k)); else break;
+                            }
+                            allMatches.Add(match);
+                        }
+                    }
+
+                    // Vertical matches
+                    if (r <= Dimensions.Rows - 3) // Check bounds
+                    {
+                        Tile tilePlus1 = GetTile(new GridPosition(r + 1, c));
+                        Tile tilePlus2 = GetTile(new GridPosition(r + 2, c));
+                         if (tilePlus1 != null && tilePlus2 != null &&
+                            currentTile.SymbolId == tilePlus1.SymbolId && currentTile.SymbolId == tilePlus2.SymbolId)
+                        {
+                            var match = new List<GridPosition> { currentPos, new GridPosition(r+1,c), new GridPosition(r+2,c) };
+                            for(int k = r + 3; k < Dimensions.Rows; k++)
+                            {
+                                Tile nextTile = GetTile(new GridPosition(k,c));
+                                if(nextTile != null && nextTile.SymbolId == currentTile.SymbolId) match.Add(new GridPosition(k,c)); else break;
+                            }
+                            allMatches.Add(match);
+                        }
                     }
                 }
             }
-            // Publish PlayerMoveMadeEvent if matches contribute to score/progress directly from here
-            // or let GridManagementService aggregate and publish.
+            // Deduplicate matches (e.g. a 5-match found as two 3-matches)
+            // This is a naive implementation; more robust matching (e.g. flood fill or checking only unvisited) is better.
+            // For this pass, we'll return potentially overlapping simple matches.
+            return allMatches.GroupBy(m => string.Join(",", m.OrderBy(p => p.Row).ThenBy(p=>p.Column).Select(p => $"{p.Row}-{p.Column}")))
+                             .Select(g => g.First())
+                             .ToList();
+        }
+
+
+        public int ProcessMatches(List<List<GridPosition>> matches)
+        {
+            if (matches == null || matches.Count == 0) return 0;
+
+            int scoreFromMatches = 0;
+            HashSet<GridPosition> matchedPositions = new HashSet<GridPosition>();
+
+            foreach (var match in matches)
+            {
+                foreach (var pos in match)
+                {
+                    matchedPositions.Add(pos);
+                }
+                scoreFromMatches += CalculateScoreForMatch(match); // Placeholder for scoring logic
+                eventBus?.Publish(new TileInteractionFeedbackEvent(match.First(), InteractionType.Match, FeedbackType.MatchFound, true, match.ToArray()));
+            }
+
+            foreach (var pos in matchedPositions)
+            {
+                Tile matchedTile = GetTile(pos);
+                if (matchedTile != null)
+                {
+                    // matchedTile.SetState(TileState.Matched); // Or directly to Empty/toBeRemoved
+                    // For simplicity, we'll set them to a placeholder "empty" or remove them.
+                    // The actual removal might be better handled by ApplyGravity which replaces them.
+                    // tiles.Remove(pos); // This would require ApplyGravity to know where to fill.
+                    // A common approach is to set their symbol to null/empty and let gravity handle.
+                    matchedTile.ClearSymbolAndState(); // New method in Tile.cs
+                    eventBus?.Publish(new TileInteractionFeedbackEvent(pos, InteractionType.Clear, FeedbackType.TileRemoved, true));
+                }
+            }
             return scoreFromMatches;
         }
 
-        // Placeholder for ApplyGravity.
-        public bool ApplyGravity()
+        public void ApplyGravity()
         {
-            bool tilesMoved = false;
-            // --- Gravity logic ---
-            // Iterate columns from bottom up. If an empty space is found,
-            // shift tiles above it downwards.
-            for (int col = 0; col < Dimensions.Columns; col++)
-            {
-                int emptyRow = -1;
-                for (int row = Dimensions.Rows - 1; row >= 0; row--) // Start from bottom
-                {
-                    GridPosition currentPos = new GridPosition(row, col);
-                    Tile tile = GetTile(currentPos);
+            if (tiles == null) return;
 
-                    if ((tile == null || tile.State == TileState.Empty) && emptyRow == -1)
+            for (int c = 0; c < Dimensions.Columns; c++)
+            {
+                int emptySlotRow = -1;
+                // Start from bottom row up to find first empty slot
+                for (int r = Dimensions.Rows - 1; r >= 0; r--)
+                {
+                    Tile currentTile = GetTile(new GridPosition(r, c));
+                    if (currentTile == null || currentTile.State == TileState.Empty || string.IsNullOrEmpty(currentTile.SymbolId) || currentTile.SymbolId == "EMPTY_SYMBOL_ID")
                     {
-                        emptyRow = row; // Found the highest empty spot in this column streak
+                        emptySlotRow = r;
+                        break;
                     }
-                    else if (tile != null && tile.State != TileState.Empty && emptyRow != -1)
+                }
+
+                if (emptySlotRow != -1) // If there's an empty slot in this column
+                {
+                    for (int r = emptySlotRow - 1; r >= 0; r--) // Iterate from above the empty slot
                     {
-                        // Move this tile down to emptyRow
-                        GridPosition targetPos = new GridPosition(emptyRow, col);
-                        
-                        _tiles[targetPos] = new Tile(targetPos, tile.SymbolId, tile.State);
-                        _tiles[currentPos] = new Tile(currentPos, null, TileState.Empty); // Old spot is now empty
-                        
-                        // GlobalEventBus.Instance.Publish(new TileMovedEvent(currentPos, targetPos, tile.SymbolId));
-                        tilesMoved = true;
-                        emptyRow--; // Next available empty spot is one row up
+                        Tile tileToDrop = GetTile(new GridPosition(r, c));
+                        if (tileToDrop != null && tileToDrop.State != TileState.Empty && !string.IsNullOrEmpty(tileToDrop.SymbolId) && tileToDrop.SymbolId != "EMPTY_SYMBOL_ID")
+                        {
+                            // Move tileToDrop to emptySlotRow
+                            tiles[new GridPosition(emptySlotRow, c)] = tileToDrop;
+                            tileToDrop.UpdatePosition(new GridPosition(emptySlotRow, c));
+
+                            // Mark original spot as empty
+                            // tiles.Remove(new GridPosition(r, c)); // Or set to an "empty" tile
+                            Tile originalSpotTile = GetTile(new GridPosition(r,c));
+                            if (originalSpotTile == tileToDrop) // ensure we are clearing the original one if it wasn't moved to collection yet
+                            {
+                                tiles[new GridPosition(r,c)] = new Tile(new GridPosition(r,c), "EMPTY_SYMBOL_ID", TileState.Empty); // placeholder
+                            }
+
+
+                            // Find next empty slot downwards from the original spot
+                            emptySlotRow--;
+                        }
                     }
                 }
             }
-            return tilesMoved;
+            // After gravity, top rows might be empty. These need to be refilled.
+            // Refill logic is typically separate or part of a game loop step.
         }
-
-        // Placeholder for Refill.
-        public bool RefillEmptyTiles()
+        
+        public void RefillEmptyTiles(System.Func<GridPosition, string> symbolProvider)
         {
-            bool tilesRefilled = false;
-            // --- Refill logic ---
-            // Iterate top rows or designated entry points.
-            // If a tile is empty, generate a new tile.
-            for (int col = 0; col < Dimensions.Columns; col++)
+            if (tiles == null || symbolProvider == null) return;
+
+            for (int r = 0; r < Dimensions.Rows; r++)
             {
-                for (int row = 0; row < Dimensions.Rows; row++) // Can iterate from top or where gravity stops
+                for (int c = 0; c < Dimensions.Columns; c++)
                 {
-                    GridPosition currentPos = new GridPosition(row, col);
+                    GridPosition currentPos = new GridPosition(r, c);
                     Tile tile = GetTile(currentPos);
-                    if (tile == null || tile.State == TileState.Empty)
+                    if (tile == null || tile.State == TileState.Empty || string.IsNullOrEmpty(tile.SymbolId) || tile.SymbolId == "EMPTY_SYMBOL_ID")
                     {
-                        // Generate new symbol (this logic would typically be more complex, e.g., from LevelGenerationParameters)
-                        string newSymbolId = "RandomSymbol" + UnityEngine.Random.Range(1, 4); // Placeholder
-                        _tiles[currentPos] = new Tile(currentPos, newSymbolId, TileState.Normal);
-                        // GlobalEventBus.Instance.Publish(new TileSpawnedEvent(currentPos, newSymbolId));
-                        tilesRefilled = true;
+                        string newSymbolId = symbolProvider(currentPos); // Get a new symbol (e.g., random)
+                        if(tile == null)
+                        {
+                            tiles[currentPos] = new Tile(currentPos, newSymbolId, TileState.Normal);
+                        }
+                        else
+                        {
+                            tile.Reinitialize(newSymbolId, TileState.Normal); // New method in Tile.cs
+                        }
+                         // eventBus?.Publish(new TileSpawnedEvent(currentPos, newSymbolId)); // Example event
                     }
                 }
             }
-            return tilesRefilled;
         }
+
+
+        private int CalculateScoreForMatch(List<GridPosition> match)
+        {
+            // Basic scoring: e.g., 10 points per tile in a match
+            // More complex: longer matches = higher scores, special tile bonuses
+            if (match == null) return 0;
+            return match.Count * 10;
+        }
+
+        // Placeholder for PlayerMove, define it properly if used for events
+        // public struct PlayerMove { /* ... */ }
     }
 
-    // Assuming these enums/structs are defined elsewhere, like in Domain.Events or Domain.ValueObjects
-    // For compilation within this file if they are not yet generated:
-    // public enum InteractionType { Tap, Swap, Match }
-    // public enum FeedbackType { Success, Failure }
-    // public struct PlayerMove { /* ... */ }
+    // Define placeholder InteractionType, FeedbackType if not defined elsewhere yet
+    // This would typically be in a shared enums file or Domain.Events
+    public enum InteractionType { Tap, Swap, Match, Clear /* ... */ }
+    // FeedbackType already defined in FeedbackConfigSO.cs stub, ensure consistency or centralize
 }

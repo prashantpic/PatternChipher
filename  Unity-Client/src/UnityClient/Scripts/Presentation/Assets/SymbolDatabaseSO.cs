@@ -1,79 +1,105 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic; // Required for List
 
 namespace PatternCipher.Client.Presentation.Assets
 {
-    [CreateAssetMenu(fileName = "SymbolDatabase", menuName = "PatternCipher/Symbol Database", order = 0)]
+    [System.Serializable]
+    public class SymbolDefinition
+    {
+        public string SymbolId; // Unique identifier (e.g., "ColorRed", "ShapeSquare_TypeA")
+        public Sprite SymbolSprite;
+        public Color SymbolColorTint = Color.white; // Optional tint
+        // Add any other presentation-relevant properties like particle effects on match, specific sounds, etc.
+        // public GameObject MatchParticlePrefab;
+        // public AudioClip MatchSound;
+    }
+
+    [CreateAssetMenu(fileName = "SymbolDatabase", menuName = "PatternCipher/Assets/Symbol Database")]
     public class SymbolDatabaseSO : ScriptableObject
     {
-        [System.Serializable]
-        public class SymbolDefinition
-        {
-            public string symbolId; // Unique identifier (e.g., "RedGem", "BlueSquare")
-            public Sprite sprite;
-            public Color symbolColor = Color.white; // Optional: for tinting or procedural symbols
-            // Add other presentation-relevant properties here
-            // public Material material;
-            // public GameObject modelPrefab; // If symbols are 3D
-            public string displayName; // For UI/debug
-        }
+        [Header("Symbol Definitions")]
+        public List<SymbolDefinition> AllSymbols;
 
-        public List<SymbolDefinition> symbolDefinitions = new List<SymbolDefinition>();
-
-        private Dictionary<string, SymbolDefinition> _symbolMap;
+        private Dictionary<string, SymbolDefinition> symbolLookup;
 
         private void OnEnable()
         {
-            // Initialize the dictionary for quick lookups
-            // This is better than doing it on every GetSymbolAsset call
-            // However, OnEnable might not be called in editor if data changes,
-            // so a lazy initialization or editor script might be needed for robustness.
-            InitializeMap();
+            // Initialize lookup dictionary for faster access
+            // This is better than doing it in OnValidate as OnValidate is editor-only
+            // and OnEnable runs at runtime when the SO is loaded.
+            InitializeLookup();
         }
-        
-        private void InitializeMap()
+
+        private void InitializeLookup()
         {
-            if (_symbolMap == null || _symbolMap.Count != symbolDefinitions.Count)
+            if (AllSymbols == null) return;
+
+            symbolLookup = new Dictionary<string, SymbolDefinition>();
+            foreach (var symbolDef in AllSymbols)
             {
-                _symbolMap = new Dictionary<string, SymbolDefinition>();
-                foreach (var def in symbolDefinitions)
+                if (symbolDef != null && !string.IsNullOrEmpty(symbolDef.SymbolId))
                 {
-                    if (!string.IsNullOrEmpty(def.symbolId) && !_symbolMap.ContainsKey(def.symbolId))
+                    if (!symbolLookup.ContainsKey(symbolDef.SymbolId))
                     {
-                        _symbolMap.Add(def.symbolId, def);
+                        symbolLookup.Add(symbolDef.SymbolId, symbolDef);
                     }
                     else
                     {
-                        Debug.LogWarning($"Duplicate or empty Symbol ID found in SymbolDatabase: {def.symbolId}");
+                        Debug.LogWarning($"Duplicate SymbolId '{symbolDef.SymbolId}' found in SymbolDatabaseSO. Ignoring duplicate.", this);
                     }
                 }
             }
         }
-
-
-        public SymbolDefinition GetSymbolDefinition(string symbolId)
+        
+        #if UNITY_EDITOR
+        private void OnValidate()
         {
-            InitializeMap(); // Ensure map is initialized
-            if (_symbolMap.TryGetValue(symbolId, out SymbolDefinition definition))
+            // Can also call InitializeLookup here for editor-time updates if needed,
+            // but be mindful of performance with large lists.
+            // InitializeLookup(); 
+        }
+        #endif
+
+
+        /// <summary>
+        /// Retrieves the Sprite asset for a given symbol ID.
+        /// </summary>
+        /// <param name="symbolId">The unique ID of the symbol.</param>
+        /// <returns>The Sprite for the symbol, or null if not found.</returns>
+        public Sprite GetSymbolSprite(string symbolId)
+        {
+            if (symbolLookup == null || symbolLookup.Count != AllSymbols.Count)
             {
-                return definition;
+                 // Ensure lookup is initialized, especially if SO was modified without OnEnable being called (e.g. hot reload)
+                InitializeLookup();
             }
-            Debug.LogWarning($"Symbol ID '{symbolId}' not found in SymbolDatabase.");
+
+            if (symbolLookup != null && symbolLookup.TryGetValue(symbolId, out SymbolDefinition def))
+            {
+                return def.SymbolSprite;
+            }
+            Debug.LogWarning($"Symbol Sprite for ID '{symbolId}' not found in SymbolDatabaseSO.", this);
             return null;
         }
 
-        public Sprite GetSymbolSprite(string symbolId)
+        /// <summary>
+        /// Retrieves the full SymbolDefinition for a given symbol ID.
+        /// </summary>
+        /// <param name="symbolId">The unique ID of the symbol.</param>
+        /// <returns>The SymbolDefinition, or null if not found.</returns>
+        public SymbolDefinition GetSymbolDefinition(string symbolId)
         {
-            SymbolDefinition definition = GetSymbolDefinition(symbolId);
-            return definition?.sprite;
-        }
-        
-        // Optional: Get all available symbol IDs
-        public List<string> GetAllSymbolIds()
-        {
-            InitializeMap();
-            return _symbolMap.Keys.ToList();
+            if (symbolLookup == null || symbolLookup.Count != AllSymbols.Count)
+            {
+                InitializeLookup();
+            }
+            
+            if (symbolLookup != null && symbolLookup.TryGetValue(symbolId, out SymbolDefinition def))
+            {
+                return def;
+            }
+            Debug.LogWarning($"Symbol Definition for ID '{symbolId}' not found in SymbolDatabaseSO.", this);
+            return null;
         }
     }
 }

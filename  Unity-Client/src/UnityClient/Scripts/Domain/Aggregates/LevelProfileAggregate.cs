@@ -1,11 +1,19 @@
 using PatternCipher.Client.Domain.Entities;
-using PatternCipher.Client.Domain.ValueObjects;
-using PatternCipher.Client.Core.Events; // For GlobalEventBus
+using PatternCipher.Client.Domain.ValueObjects; // For GridPosition, LevelGenerationParameters, SolutionPath
+using PatternCipher.Client.Core.Events; // For GlobalEventBus and GameEvent
 using PatternCipher.Client.Domain.Events; // For LevelCompletedEvent
+using UnityEngine; // For Debug.Log, remove if not desired
 
 namespace PatternCipher.Client.Domain.Aggregates
 {
-    public enum LevelCompletionStatus { InProgress, Won, Lost }
+    public enum LevelCompletionStatus
+    {
+        InProgress,
+        Won,
+        Lost_TimeUp,
+        Lost_NoMoves,
+        // Add other statuses as needed
+    }
 
     public class LevelProfileAggregate
     {
@@ -14,39 +22,56 @@ namespace PatternCipher.Client.Domain.Aggregates
         public int CurrentScore { get; private set; }
         public int MovesTaken { get; private set; }
         public float TimeElapsed { get; private set; } // in seconds
-        public LevelCompletionStatus CompletionStatus { get; private set; }
+        public LevelCompletionStatus Status { get; private set; }
 
-        // Potentially store solution path for hint system or validation
-        public SolutionPath Solution { get; private set; } 
-        // And original generation parameters
-        public LevelGenerationParameters GenerationParameters { get; private set; }
+        // Optional: Store initial parameters or solution for reference
+        // public LevelGenerationParameters GenerationParams { get; private set; }
+        // public SolutionPath OptimalSolution { get; private set; }
 
+        private GlobalEventBus eventBus;
+        private float maxTimeAllowed = -1f; // -1 means no time limit, or set from objective/params
+        private int maxMovesAllowed = -1; // -1 means no move limit
 
-        public LevelProfileAggregate(int levelId, LevelObjective objective, SolutionPath solution = null, LevelGenerationParameters genParams = null)
+        public LevelProfileAggregate(
+            int levelId,
+            LevelObjective objective,
+            GlobalEventBus bus,
+            float timeLimit = -1f, // e.g., from Level data
+            int moveLimit = -1 // e.g., from Level data
+            // LevelGenerationParameters genParams = null, 
+            // SolutionPath solution = null
+            )
         {
             LevelId = levelId;
             Objective = objective;
-            Solution = solution;
-            GenerationParameters = genParams;
+            eventBus = bus;
+            Status = LevelCompletionStatus.InProgress;
 
             CurrentScore = 0;
             MovesTaken = 0;
             TimeElapsed = 0f;
-            CompletionStatus = LevelCompletionStatus.InProgress;
+            maxTimeAllowed = timeLimit;
+            maxMovesAllowed = moveLimit;
+
+            // GenerationParams = genParams;
+            // OptimalSolution = solution;
         }
 
         public void IncrementMoves()
         {
-            if (CompletionStatus == LevelCompletionStatus.InProgress)
-            {
-                MovesTaken++;
-                // Potentially check for move limit if objective has one
-            }
+            if (Status != LevelCompletionStatus.InProgress) return;
+            MovesTaken++;
+            CheckLossConditions(); // Check if out of moves
         }
 
         public void AddScore(int points)
         {
-            if (CompletionStatus == LevelCompletionStatus.InProgress && points > 0)
+            if (Status != LevelCompletionStatus.InProgress) return;
+            if (points < 0 && CurrentScore + points < 0)
+            {
+                CurrentScore = 0; // Score cannot go below zero
+            }
+            else
             {
                 CurrentScore += points;
             }
@@ -54,78 +79,97 @@ namespace PatternCipher.Client.Domain.Aggregates
 
         public void UpdateTime(float deltaTime)
         {
-            if (CompletionStatus == LevelCompletionStatus.InProgress)
-            {
-                TimeElapsed += deltaTime;
-                // Potentially check for time limit if objective has one
-                // if (Objective.HasTimeLimit && TimeElapsed >= Objective.TimeLimit) {
-                //    LoseLevel("Time ran out!");
-                // }
-            }
+            if (Status != LevelCompletionStatus.InProgress) return;
+            TimeElapsed += deltaTime;
+            CheckLossConditions(); // Check if time is up
         }
 
-        public bool CheckCompletion(GridAggregate currentGrid)
+        public void CheckCompletion(GridAggregate currentGrid) // Pass current grid state
         {
-            if (CompletionStatus != LevelCompletionStatus.InProgress)
-            {
-                return CompletionStatus == LevelCompletionStatus.Won; // Already completed
-            }
+            if (Status != LevelCompletionStatus.InProgress) return;
 
             if (Objective != null && Objective.IsCompleted(currentGrid, this))
             {
-                WinLevel();
-                return true;
+                Status = LevelCompletionStatus.Won;
+                PublishLevelCompletedEvent();
+            }
+            else
+            {
+                CheckLossConditions(currentGrid); // Check for no more possible moves
+            }
+        }
+        
+        private void CheckLossConditions(GridAggregate currentGrid = null)
+        {
+            if (Status != LevelCompletionStatus.InProgress) return;
+
+            if (maxTimeAllowed > 0 && TimeElapsed >= maxTimeAllowed)
+            {
+                Status = LevelCompletionStatus.Lost_TimeUp;
+                PublishLevelCompletedEvent();
+                return;
+            }
+
+            if (maxMovesAllowed > 0 && MovesTaken >= maxMovesAllowed)
+            {
+                 // If objectives not met by now, it's a loss by move limit
+                if (Objective == null || (currentGrid != null && !Objective.IsCompleted(currentGrid, this)))
+                {
+                    Status = LevelCompletionStatus.Lost_NoMoves; // Or a specific "Lost_MoveLimitExceeded"
+                    PublishLevelCompletedEvent();
+                    return;
+                }
             }
             
-            // Add other loss conditions here, e.g., out of moves if applicable
-            // if (Objective.HasMoveLimit && MovesTaken >= Objective.MoveLimit && !Objective.IsCompleted(currentGrid, this)) {
-            //    LoseLevel("Out of moves!");
-            //    return false;
+            // Optional: Check for no more possible moves on the grid
+            // This requires more complex logic, possibly a domain service call
+            // if (currentGrid != null && !AreTherePossibleMoves(currentGrid))
+            // {
+            //     if (Objective == null || !Objective.IsCompleted(currentGrid, this))
+            //     {
+            //         Status = LevelCompletionStatus.Lost_NoMoves;
+            //         PublishLevelCompletedEvent();
+            //     }
             // }
-
-            return false;
         }
 
-        private void WinLevel()
+        // Placeholder for a more complex check
+        // private bool AreTherePossibleMoves(GridAggregate grid)
+        // {
+        //     // Logic to analyze the grid and see if any valid moves exist
+        //     // This might involve trying all possible swaps and checking if they lead to a match
+        //     // Or, if hints are available, checking if a hint can be generated.
+        //     return true; // Placeholder
+        // }
+
+
+        private void PublishLevelCompletedEvent()
         {
-            if (CompletionStatus == LevelCompletionStatus.InProgress)
+            if (eventBus == null)
             {
-                CompletionStatus = LevelCompletionStatus.Won;
-                // Calculate stars, final bonuses, etc.
-                int starsAwarded = CalculateStars(); 
-                GlobalEventBus.Instance.Publish(new LevelCompletedEvent(LevelId, CurrentScore, MovesTaken, TimeElapsed, starsAwarded, LevelCompletionStatus.Won));
+                Debug.LogWarning("GlobalEventBus is null in LevelProfileAggregate. Cannot publish LevelCompletedEvent.");
+                return;
             }
-        }
 
-        public void LoseLevel(string reason = "Objective failed") // Public if external factors can cause loss
-        {
-            if (CompletionStatus == LevelCompletionStatus.InProgress)
+            // Calculate stars (placeholder)
+            int starsAwarded = 0;
+            if (Status == LevelCompletionStatus.Won)
             {
-                CompletionStatus = LevelCompletionStatus.Lost;
-                GlobalEventBus.Instance.Publish(new LevelCompletedEvent(LevelId, CurrentScore, MovesTaken, TimeElapsed, 0, LevelCompletionStatus.Lost, reason));
+                starsAwarded = 3; // Simple static stars for now
+                if (maxMovesAllowed > 0 && MovesTaken > maxMovesAllowed / 2) starsAwarded--; // Example condition
+                if (maxTimeAllowed > 0 && TimeElapsed > maxTimeAllowed / 2) starsAwarded--;   // Example condition
+                if (starsAwarded < 1) starsAwarded = 1;
             }
-        }
 
-        private int CalculateStars()
-        {
-            // Example star calculation logic
-            int stars = 1; // Base star for completion
-            if (CurrentScore > (GenerationParameters?.TargetScoreForTwoStars ?? 5000)) stars = 2; // Example: TargetScoreForTwoStars from LevelGenerationParameters
-            if (CurrentScore > (GenerationParameters?.TargetScoreForThreeStars ?? 10000)) stars = 3;
-
-            // Could also depend on moves, time, etc.
-            // if (MovesTaken <= (Solution?.ParMoves ?? int.MaxValue)) stars++;
-            
-            return UnityEngine.Mathf.Clamp(stars, 1, 3);
-        }
-
-        // For loading from persistence
-        public void RestoreState(int score, int moves, float time, LevelCompletionStatus status)
-        {
-            CurrentScore = score;
-            MovesTaken = moves;
-            TimeElapsed = time;
-            CompletionStatus = status;
+            var completedEvent = new LevelCompletedEvent(
+                LevelId,
+                CurrentScore,
+                MovesTaken,
+                TimeElapsed,
+                starsAwarded,
+                Status // Pass the actual completion status
+            );
+            eventBus.Publish(completedEvent);
         }
     }
 }

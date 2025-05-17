@@ -1,40 +1,48 @@
-using PatternCipher.Client.Domain.ValueObjects; // For GridPosition
+// Assuming GridPosition struct is defined in PatternCipher.Client.Domain.ValueObjects
+// If not, a placeholder definition would be needed here or in a separate file.
+// For example:
+// namespace PatternCipher.Client.Domain.ValueObjects {
+//     public struct GridPosition { public int Row; public int Column; /* ... equality ... */ }
+// }
+using PatternCipher.Client.Domain.ValueObjects;
+
 
 namespace PatternCipher.Client.Application.Commands
 {
-    public enum PlayerMoveType
+    public enum MoveType
     {
         Tap,
-        Swap
-        // Potentially Drag, etc.
+        Swap,
+        // Add other move types if necessary (e.g., Drag, MatchSequence)
     }
 
     public class ProcessPlayerMoveCommand
     {
-        public PlayerMoveType MoveType { get; }
+        public MoveType Type { get; }
         public GridPosition Position1 { get; }
-        public GridPosition? Position2 { get; } // Nullable if MoveType is Tap
+        public GridPosition Position2 { get; } // Nullable or use a specific value if Type is Tap
 
         // Constructor for Tap
-        public ProcessPlayerMoveCommand(PlayerMoveType moveType, GridPosition position1)
+        public ProcessPlayerMoveCommand(MoveType type, GridPosition position1)
         {
-            if (moveType != PlayerMoveType.Tap)
+            if (type != MoveType.Tap)
             {
-                throw new System.ArgumentException("This constructor is for Tap moves only. Use the two-position constructor for other move types.", nameof(moveType));
+                // Consider throwing an ArgumentException if constructor misuse is a concern
+                // For simplicity, we'll allow it but Position2 will be default.
             }
-            MoveType = moveType;
+            Type = type;
             Position1 = position1;
-            Position2 = null;
+            Position2 = default; // Or a specific "invalid" GridPosition
         }
 
-        // Constructor for Swap (or other two-position moves)
-        public ProcessPlayerMoveCommand(PlayerMoveType moveType, GridPosition position1, GridPosition position2)
+        // Constructor for Swap
+        public ProcessPlayerMoveCommand(MoveType type, GridPosition position1, GridPosition position2)
         {
-            if (moveType == PlayerMoveType.Tap)
+            if (type != MoveType.Swap)
             {
-                 throw new System.ArgumentException("This constructor is for two-position moves like Swap. Use the single-position constructor for Tap.", nameof(moveType));
+                // Consider throwing an ArgumentException
             }
-            MoveType = moveType;
+            Type = type;
             Position1 = position1;
             Position2 = position2;
         }

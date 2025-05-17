@@ -1,103 +1,131 @@
-using UnityEngine;
 using PatternCipher.Client.DataPersistence.Models; // For PlayerProfileData
+using UnityEngine; // For Debug.Log
 
 namespace PatternCipher.Client.DataPersistence.Migrators
 {
     public class SaveDataMigrator
     {
-        // The target version this migrator aims to bring data to.
-        // This should match PlayerProfileData.CurrentSchemaVersion
-        private readonly int _currentTargetVersion;
-
-        public SaveDataMigrator(int currentTargetSchemaVersion)
-        {
-            _currentTargetVersion = currentTargetSchemaVersion;
-        }
-
-        public PlayerProfileData Migrate(PlayerProfileData data)
+        /// <summary>
+        /// Migrates the PlayerProfileData from its current version to the targetVersion.
+        /// </summary>
+        /// <param name="data">The PlayerProfileData to migrate.</param>
+        /// <param name="targetVersion">The desired schema version.</param>
+        /// <returns>The migrated PlayerProfileData, or the original data if no migration was needed or possible.</returns>
+        public PlayerProfileData Migrate(PlayerProfileData data, int targetVersion)
         {
             if (data == null)
             {
                 Debug.LogError("Cannot migrate null PlayerProfileData.");
-                return null; 
+                return null;
             }
 
-            if (data.SchemaVersion == _currentTargetVersion)
+            if (data.SchemaVersion == targetVersion)
             {
-                Debug.Log($"Data schema version {data.SchemaVersion} is current. No migration needed.");
-                return data; // No migration needed
+                Debug.Log($"PlayerProfileData is already at target version {targetVersion}. No migration needed.");
+                return data;
             }
 
-            if (data.SchemaVersion > _currentTargetVersion)
+            if (data.SchemaVersion > targetVersion)
             {
-                Debug.LogError($"Data schema version {data.SchemaVersion} is newer than target version {_currentTargetVersion}. Cannot downgrade. Data might be corrupted or from a future version.");
-                // Potentially offer to reset data or handle as an error.
-                return data; // Or throw an exception / return null
+                // Downgrading is typically not supported or very complex.
+                Debug.LogError($"Cannot downgrade PlayerProfileData from version {data.SchemaVersion} to {targetVersion}. " +
+                               "This scenario is not supported. Returning original data.");
+                return data;
             }
-            
-            Debug.Log($"Starting migration for data from version {data.SchemaVersion} to {_currentTargetVersion}.");
+
+            Debug.Log($"Starting migration of PlayerProfileData from version {data.SchemaVersion} to {targetVersion}.");
+
+            PlayerProfileData migratedData = data; // Start with a copy or the original reference
 
             // Iteratively apply migrations
-            PlayerProfileData migratedData = data; // Start with the data to be migrated
-            while (migratedData.SchemaVersion < _currentTargetVersion)
+            while (migratedData.SchemaVersion < targetVersion)
             {
-                migratedData = ApplyNextMigrationStep(migratedData);
-                if (migratedData == null) // A migration step failed
+                switch (migratedData.SchemaVersion)
                 {
-                    Debug.LogError($"Migration failed at version {data.SchemaVersion}. Cannot proceed.");
-                    return null; // Or return original data / throw
+                    case 1:
+                        migratedData = MigrateFromV1ToV2(migratedData);
+                        break;
+                    case 2:
+                        migratedData = MigrateFromV2ToV3(migratedData);
+                        break;
+                    // Add more cases for each version step
+                    // case N:
+                    //     migratedData = MigrateFromVNToVNPlus1(migratedData);
+                    //     break;
+                    default:
+                        Debug.LogError($"No migration path found for PlayerProfileData from version {migratedData.SchemaVersion}. " +
+                                       "Stopping migration. Data might be in an intermediate state.");
+                        return migratedData; // Return data in its current (partially migrated) state
+                }
+
+                if (migratedData == null) // A migration step failed critically
+                {
+                    Debug.LogError($"Migration from version {data.SchemaVersion} failed. Cannot proceed.");
+                    return data; // Return original data or handle error appropriately
                 }
             }
             
-            Debug.Log($"Migration completed. Data is now at version {migratedData.SchemaVersion}.");
+            Debug.Log($"Migration completed. PlayerProfileData is now at version {migratedData.SchemaVersion}.");
             return migratedData;
         }
 
-        private PlayerProfileData ApplyNextMigrationStep(PlayerProfileData oldData)
+        // --- Example Migration Methods ---
+        // Each method handles migration from one specific version to the next.
+
+        private PlayerProfileData MigrateFromV1ToV2(PlayerProfileData v1Data)
         {
-            // This switch will apply one migration step at a time.
-            // Each case should increment oldData.SchemaVersion.
-            switch (oldData.SchemaVersion)
-            {
-                case 1:
-                    // Example: Migrate from version 1 to version 2
-                    // PlayerProfileDataV2 newDataV2 = new PlayerProfileDataV2(oldData);
-                    // newDataV2.SchemaVersion = 2;
-                    // return newDataV2; // Assuming PlayerProfileDataV2 inherits or can be cast to PlayerProfileData for the next step
-                    Debug.Log("Applying migration from v1 to v2...");
-                    // Implement actual V1 to V2 transformation logic here.
-                    // For example, if a field was renamed or a new default value added.
-                    // oldData.SomeNewFieldInV2 = "default_value"; // If PlayerProfileData is mutable during migration
-                    oldData.SchemaVersion = 2; // Crucially, update the version
-                    return oldData; // Return the modified data
+            Debug.Log("Migrating PlayerProfileData from V1 to V2...");
+            // Create a new V2 data object
+            PlayerProfileData v2Data = new PlayerProfileData(); // Assuming default constructor or copy relevant fields
+            
+            // Copy common fields
+            v2Data.UserId = v1Data.UserId;
+            v2Data.TotalStars = v1Data.TotalStars;
+            // ... copy other existing fields ...
 
-                case 2:
-                    // Example: Migrate from version 2 to version 3
-                    Debug.Log("Applying migration from v2 to v3...");
-                    // Implement V2 to V3 transformation logic
-                    oldData.SchemaVersion = 3;
-                    return oldData;
-                
-                // Add more cases for each version jump
-                // case N:
-                //    return MigrateFromNToNPlus1(oldData);
+            // Apply V1 to V2 changes:
+            // Example: A new field 'LastPlayedLevelId' was added in V2, default to 0 or null.
+            // v2Data.LastPlayedLevelId = 0; 
+            
+            // Example: A field 'PlayerName' was renamed to 'DisplayName'.
+            // v2Data.DisplayName = v1Data.PlayerName; // Assuming PlayerName existed in V1 PlayerProfileData definition
 
-                default:
-                    Debug.LogError($"No migration path defined for schema version {oldData.SchemaVersion}.");
-                    return null; // Or throw an exception
-            }
+            // Example: LevelRecords structure changed
+            // if (v1Data.LevelScores != null) // Assuming old structure was LevelScores: Dictionary<int, int>
+            // {
+            //     v2Data.LevelRecords = new System.Collections.Generic.Dictionary<int, LevelRecord>();
+            //     foreach(var kvp in v1Data.LevelScores)
+            //     {
+            //         v2Data.LevelRecords.Add(kvp.Key, new LevelRecord { Stars = 0, BestScore = kvp.Value }); // Default stars
+            //     }
+            // }
+
+
+            v2Data.SchemaVersion = 2; // IMPORTANT: Update the schema version
+            Debug.Log("Migration from V1 to V2 complete.");
+            return v2Data;
         }
 
-        // Example of a specific migration method (if logic is complex)
-        // private PlayerProfileData MigrateFrom1To2(PlayerProfileDataV1 oldDataV1)
-        // {
-        //     PlayerProfileData currentDataFormat = new PlayerProfileData(); // Or target version DTO
-        //     currentDataFormat.SchemaVersion = 2;
-        //     currentDataFormat.UserId = oldDataV1.UserId;
-        //     currentDataFormat.TotalStars = oldDataV1.TotalStars;
-        //     // currentDataFormat.NewFieldInV2 = oldDataV1.OldFieldEquivalent ?? defaultValue;
-        //     // ... map other fields, transform as needed
-        //     return currentDataFormat;
-        // }
+        private PlayerProfileData MigrateFromV2ToV3(PlayerProfileData v2Data)
+        {
+            Debug.Log("Migrating PlayerProfileData from V2 to V3...");
+            PlayerProfileData v3Data = new PlayerProfileData();
+            // Copy fields from v2Data...
+            v3Data.UserId = v2Data.UserId;
+            // ...
+
+            // Apply V2 to V3 changes:
+            // Example: Settings object was introduced.
+            // v3Data.Settings = new GameSettings(); // Initialize with default settings
+            // if (v2Data.HadSeparateVolumeField) v3Data.Settings.Volume = v2Data.OldVolumeField;
+
+
+            v3Data.SchemaVersion = 3; // IMPORTANT
+            Debug.Log("Migration from V2 to V3 complete.");
+            return v3Data;
+        }
+
+        // Add more migration methods as needed:
+        // private PlayerProfileData MigrateFromV3ToV4(PlayerProfileData v3Data) { /* ... */ }
     }
 }
