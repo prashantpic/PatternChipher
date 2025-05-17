@@ -1,0 +1,79 @@
+.grid-tile {
+    /* REQ-UIX-013.3: Tap Target Size - Ensure minimum dimensions */
+    min-width: 60px;
+    min-height: 60px;
+    width: 60px; /* Can be adjusted by GridView logic for different grid sizes */
+    height: 60px; /* Can be adjusted by GridView logic for different grid sizes */
+    
+    /* REQ-UIX-015: Visual Clarity */
+    background-color: #808080; /* Default: grey, will be changed by SymbolDefinition or state */
+    border-color: #333333;
+    border-width: 2px;
+    border-radius: 8px; /* Rounded corners */
+    
+    margin: 2px; /* Spacing between tiles */
+    
+    /* For centering content within the tile */
+    align-items: center;
+    justify-content: center;
+
+    /* Transition for smooth state changes, respect reduced motion via C# if complex */
+    transition-property: background-color, border-color, transform;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-in-out;
+}
+
+.grid-tile__symbol-icon {
+    width: 70%;
+    height: 70%;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.grid-tile__symbol-label {
+    font-size: 18px; /* Base size, adjust based on accessibility settings */
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.grid-tile__overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0); /* Transparent by default */
+}
+
+/* --- Tile States (REQ-UIX-015) --- */
+.grid-tile--selected {
+    border-color: #FFFF00; /* Yellow highlight */
+    border-width: 3px;
+    transform: scale(1.05);
+}
+
+.grid-tile--highlighted {
+    background-color: #ADD8E6; /* Light blue highlight */
+    /* Or use a shader effect applied via C# */
+}
+
+.grid-tile--locked {
+    background-color: #A9A9A9; /* Darker grey */
+    /* Potentially an overlay icon (padlock) added via C# or another VisualElement */
+}
+
+.grid-tile--obstacle {
+    background-color: #505050; /* Very dark grey / representing an unpassable block */
+    /* Or a specific texture/icon */
+}
+
+.grid-tile--key {
+    /* Style for a key tile - e.g., a specific color or icon tint */
+    background-color: #FFD700; /* Gold-ish */
+}
+
+/* Add more states as defined in TileVisualState enum */
+
+/* Focus state for keyboard navigation (Accessibility) */
+.grid-tile:focus {
+    outline-width: 2px;
+    outline-color: var(--unity-focus-ring-color, #0078D4); /* Default Unity focus color or themed */
+}

@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="grid-view" class="grid-view">
+        <ui:VisualElement name="grid-view__container" class="grid-view__container" />
+    </ui:VisualElement>
+</ui:UXML>

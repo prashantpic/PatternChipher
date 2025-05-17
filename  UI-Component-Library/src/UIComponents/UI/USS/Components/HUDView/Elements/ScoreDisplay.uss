@@ -1,0 +1,20 @@
+.score-display {
+    flex-direction: row;
+    align-items: center;
+    padding: 5px 10px;
+    /* background-color: rgba(0, 0, 0, 0.3); /* Optional subtle background */
+    /* border-radius: 5px; */
+}
+
+.score-display__label {
+    font-size: 18px; /* Base size, should adapt to Text Scaling */
+    color: #FFFFFF;
+    margin-right: 8px;
+    -unity-font-style: bold;
+}
+
+.score-display__value {
+    font-size: 20px; /* Base size, should adapt to Text Scaling */
+    color: #FFFFFF; 
+    -unity-font-style: bold;
+}

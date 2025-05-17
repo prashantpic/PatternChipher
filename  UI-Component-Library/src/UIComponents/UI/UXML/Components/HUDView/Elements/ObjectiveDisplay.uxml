@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="objective-display" class="objective-display">
+        <engine:Image name="objective-display__icon" class="objective-display__icon" />
+        <engine:Label name="objective-display__text" class="objective-display__text" text="Objective Text"/>
+    </ui:VisualElement>
+</ui:UXML>

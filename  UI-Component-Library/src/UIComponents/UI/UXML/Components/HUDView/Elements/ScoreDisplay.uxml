@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="score-display" class="score-display">
+        <engine:Label name="score-display__label" class="score-display__label" text="Score:"/>
+        <engine:Label name="score-display__value" class="score-display__value" text="0"/>
+    </ui:VisualElement>
+</ui:UXML>

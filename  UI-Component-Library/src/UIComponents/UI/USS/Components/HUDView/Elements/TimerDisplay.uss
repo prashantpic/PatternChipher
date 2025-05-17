@@ -1,0 +1,23 @@
+.timer-display {
+    flex-direction: row;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+.timer-display__label {
+    font-size: 18px;
+    color: #FFFFFF;
+    margin-right: 8px;
+    -unity-font-style: bold;
+}
+
+.timer-display__value {
+    font-size: 20px;
+    color: #FFFFFF;
+    -unity-font-style: bold;
+}
+
+/* Example: Style for when timer is low (could be applied via C# by adding a class) */
+.timer-display--low-time .timer-display__value {
+    color: #FF0000; /* Red */
+}

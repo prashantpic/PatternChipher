@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <engine:Button name="button-view" class="button-view">
+        <engine:Label name="button-view__label" class="button-view__label" text="Button"/>
+    </engine:Button>
+</ui:UXML>

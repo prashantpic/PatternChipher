@@ -1,0 +1,54 @@
+.button-view {
+    /* REQ-UIX-013.3: Tap Target Size */
+    min-width: 80px; 
+    min-height: 48px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    background-color: #0078D4; /* Example blue */
+    border-color: #005A9E;
+    border-width: 0px; /* Buttons often don't need borders if bg is distinct */
+    border-radius: 8px;
+
+    margin: 5px; /* Spacing around button */
+
+    /* Transition for hover/active states, respect reduced motion via C# if complex */
+    transition-property: background-color, transform;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.button-view .button-view__label {
+    font-size: 18px; /* Base size, adapt to Text Scaling */
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+/* Interaction States for Visual Feedback */
+.button-view:hover {
+    background-color: #005A9E; /* Darker blue */
+}
+
+.button-view:active {
+    background-color: #004578; /* Even darker blue */
+    transform: scale(0.98);
+}
+
+.button-view:disabled {
+    background-color: #A0A0A0; /* Greyed out */
+    opacity: 0.7;
+}
+
+.button-view:disabled .button-view__label {
+    color: #D0D0D0;
+}
+
+/* Focus state for keyboard navigation (Accessibility) */
+.button-view:focus {
+    outline-width: 2px;
+    outline-color: var(--unity-focus-ring-color, #0078D4); /* Default Unity focus color or themed */
+    outline-offset: 2px;
+}

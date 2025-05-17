@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="grid-tile" class="grid-tile">
+        <engine:Image name="grid-tile__symbol-icon" class="grid-tile__symbol-icon" pickable="false" />
+        <engine:Label name="grid-tile__symbol-label" class="grid-tile__symbol-label" pickable="false" />
+        <ui:VisualElement name="grid-tile__overlay" class="grid-tile__overlay" pickable="false" />
+    </ui:VisualElement>
+</ui:UXML>

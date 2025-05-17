@@ -1,0 +1,23 @@
+.move-counter-display {
+    flex-direction: row;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+.move-counter-display__label {
+    font-size: 18px;
+    color: #FFFFFF;
+    margin-right: 8px;
+    -unity-font-style: bold;
+}
+
+.move-counter-display__value {
+    font-size: 20px;
+    color: #FFFFFF;
+    -unity-font-style: bold;
+}
+
+/* Example: Style for when moves exceed par (could be applied via C# by adding a class) */
+.move-counter-display--over-par .move-counter-display__value {
+    color: #FFA500; /* Orange */
+}

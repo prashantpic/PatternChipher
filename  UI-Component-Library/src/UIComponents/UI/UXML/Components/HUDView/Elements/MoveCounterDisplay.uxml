@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="move-counter-display" class="move-counter-display">
+        <engine:Label name="move-counter-display__label" class="move-counter-display__label" text="Moves:"/>
+        <engine:Label name="move-counter-display__value" class="move-counter-display__value" text="0 / -"/>
+    </ui:VisualElement>
+</ui:UXML>

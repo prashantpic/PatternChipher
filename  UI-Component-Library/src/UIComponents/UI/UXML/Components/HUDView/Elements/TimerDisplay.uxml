@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
+    <ui:VisualElement name="timer-display" class="timer-display">
+        <engine:Label name="timer-display__label" class="timer-display__label" text="Time:"/>
+        <engine:Label name="timer-display__value" class="timer-display__value" text="00:00"/>
+    </ui:VisualElement>
+</ui:UXML>
