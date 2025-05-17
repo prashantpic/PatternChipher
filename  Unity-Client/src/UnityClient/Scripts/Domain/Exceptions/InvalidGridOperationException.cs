@@ -5,7 +5,7 @@ namespace PatternCipher.Client.Domain.Exceptions
     public class InvalidGridOperationException : Exception
     {
         public InvalidGridOperationException()
-            : base("An invalid operation was attempted on the game grid.")
+            : base("An invalid operation was attempted on the grid.")
         {
         }
 

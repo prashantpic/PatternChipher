@@ -1,68 +1,60 @@
 using PatternCipher.Client.Core.Events;
-using PatternCipher.Client.Domain.ValueObjects; // For GridPosition
+using PatternCipher.Client.Domain.ValueObjects;
 
 namespace PatternCipher.Client.Domain.Events
 {
-    public enum InteractionType
+    public enum InteractionType // Domain-level interaction type
     {
         Tap,
         Swap,
         Match,
         Cascade,
-        TileSpawn,
-        TileDestroy,
-        InvalidMoveAttempt
-        // Add more specific interaction types as needed
+        SpecialActivation,
+        InvalidOperation
     }
 
-    public enum FeedbackType // This could also be a more complex object
+    public enum FeedbackType // Requested presentation feedback
     {
-        // Visual
+        None,
+        GenericSuccess,
+        GenericFailure,
         TileSelect,
         TileDeselect,
         TileSwapAnimation,
-        TileMatchAnimation,
-        TileClearAnimation,
-        TileFallAnimation,
-        SpecialEffectActivation,
-        ScreenShake,
-        // Audio
-        TapSuccessSound,
-        TapInvalidSound,
-        SwapSound,
-        MatchSound,
-        CascadeSound,
-        SpecialEffectSound,
-        LevelGoalProgressSound
-        // Add more feedback types as needed
+        TileMatchClear,
+        TileDropAnimation,
+        SpecialEffectParticle,
+        InvalidMoveShake,
+        ObjectiveProgress,
+        // Add more specific feedback types
     }
 
     public class TileInteractionFeedbackEvent : GameEvent
     {
-        public GridPosition Position { get; } // Primary position of interaction
-        public GridPosition Position2 { get; } // Secondary position (e.g., for swap)
+        public GridPosition Position { get; } // Primary position for the feedback
+        public GridPosition? Position2 { get; } // Secondary position (e.g., for a swap)
         public InteractionType Type { get; }
-        public FeedbackType RequestedFeedback { get; } // Specific feedback requested
-        public bool WasSuccessful { get; } // Indicates if the underlying domain operation was valid/successful
-        public string SymbolId { get; } // Optional: symbol involved, for symbol-specific feedback
-        public int ScoreChange { get; } // Optional: score change related to this feedback
+        public FeedbackType RequestedFeedback { get; }
+        public bool WasSuccessful { get; } // Contextual success of the domain operation
+        public string SymbolId { get; } // Optional: Symbol involved, if relevant for feedback
+        public int ComboCount { get; } // Optional: For combo-related feedback
 
         public TileInteractionFeedbackEvent(
             GridPosition position,
             InteractionType type,
             FeedbackType requestedFeedback,
             bool wasSuccessful,
-            GridPosition position2 = default, // Make default if not always applicable
+            GridPosition? position2 = null,
             string symbolId = null,
-            int scoreChange = 0)
+            int comboCount = 0)
         {
             Position = position;
-            Position2 = position2;
             Type = type;
             RequestedFeedback = requestedFeedback;
             WasSuccessful = wasSuccessful;
+            Position2 = position2;
             SymbolId = symbolId;
-            ScoreChange = scoreChange;
+            ComboCount = comboCount;
         }
     }
 }

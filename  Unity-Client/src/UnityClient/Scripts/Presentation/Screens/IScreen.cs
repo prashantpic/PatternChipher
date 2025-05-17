@@ -2,13 +2,13 @@ namespace PatternCipher.Client.Presentation.Screens
 {
     public interface IScreen
     {
-        void Initialize(ScreenManager manager, object data = null);
         void Show();
         void Hide();
-        // UpdateView might not be in the spec from initial prompt, but IScreen.cs section says: Show(), Hide(), UpdateView()
-        // Keeping UpdateView as per specific IScreen.cs instruction
-        void UpdateView(); 
-        void OnScreenBecameActive();
-        void OnScreenBecameInactive();
+        void UpdateView(); // As per instruction; often, data is passed to Show or specific update methods.
+        // Consider adding Initialize(ScreenManager manager, object data = null) as per detailed SDS
+        // void Initialize(ScreenManager manager, object data = null);
+        // Consider adding OnScreenBecameActive / OnScreenBecameInactive as per detailed SDS
+        // void OnScreenBecameActive();
+        // void OnScreenBecameInactive();
     }
 }

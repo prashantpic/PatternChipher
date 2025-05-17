@@ -8,9 +8,9 @@ namespace PatternCipher.Client.Domain.Entities
         Selected,
         Matched,
         Locked,
-        Falling,
-        Vanishing
-        // Add more states as needed
+        Clearing, // For effects
+        Spawning, // For effects
+        // Add other states as needed
     }
 
     public class Tile
@@ -28,21 +28,19 @@ namespace PatternCipher.Client.Domain.Entities
 
         public void SetState(TileState newState)
         {
-            // Potentially add validation or logic before changing state
+            // Add validation or side effects if necessary
             State = newState;
-            // Consider publishing an event if a tile's state change is significant domain-wise
-            // e.g., GlobalEventBus.Instance.Publish(new TileStateChangedEvent(this, oldState, newState));
         }
 
-        public void ChangeSymbol(string newSymbolId)
+        public void SetSymbol(string newSymbolId)
         {
-            // Potentially add validation
+            // Add validation or side effects if necessary
             SymbolId = newSymbolId;
         }
 
-        public void UpdatePosition(GridPosition newPosition)
+        public void SetPosition(GridPosition newPosition)
         {
-            // This might be needed for tiles that move (e.g. gravity)
+            // Typically, position is immutable or set only during grid reshuffles
             Position = newPosition;
         }
     }

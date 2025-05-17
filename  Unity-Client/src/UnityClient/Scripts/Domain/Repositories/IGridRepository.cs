@@ -7,7 +7,7 @@ namespace PatternCipher.Client.Domain.Repositories
     {
         Task SaveGridStateAsync(GridAggregate grid, string saveSlotId);
         Task<GridAggregate> LoadGridStateAsync(string saveSlotId);
-        Task DeleteGridStateAsync(string saveSlotId); // Optional: For clearing a slot
-        Task<bool> HasSavedGridStateAsync(string saveSlotId); // Optional: To check existence
+        Task DeleteGridStateAsync(string saveSlotId);
+        Task<bool> HasSavedGridStateAsync(string saveSlotId);
     }
 }

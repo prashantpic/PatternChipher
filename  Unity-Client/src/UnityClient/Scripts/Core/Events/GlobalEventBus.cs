@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace PatternCipher.Client.Core.Events
 {
@@ -19,36 +18,32 @@ namespace PatternCipher.Client.Core.Events
             }
         }
 
-        private readonly Dictionary<Type, List<Delegate>> _subscribers;
+        private readonly Dictionary<Type, List<Delegate>> _eventHandlers;
 
         private GlobalEventBus()
         {
-            _subscribers = new Dictionary<Type, List<Delegate>>();
+            _eventHandlers = new Dictionary<Type, List<Delegate>>();
         }
 
         public void Subscribe<TEvent>(Action<TEvent> handler) where TEvent : GameEvent
         {
             Type eventType = typeof(TEvent);
-            if (!_subscribers.ContainsKey(eventType))
+            if (!_eventHandlers.ContainsKey(eventType))
             {
-                _subscribers[eventType] = new List<Delegate>();
+                _eventHandlers[eventType] = new List<Delegate>();
             }
-
-            if (!_subscribers[eventType].Contains(handler))
-            {
-                _subscribers[eventType].Add(handler);
-            }
+            _eventHandlers[eventType].Add(handler);
         }
 
         public void Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : GameEvent
         {
             Type eventType = typeof(TEvent);
-            if (_subscribers.ContainsKey(eventType))
+            if (_eventHandlers.ContainsKey(eventType))
             {
-                _subscribers[eventType].Remove(handler);
-                if (_subscribers[eventType].Count == 0)
+                _eventHandlers[eventType].Remove(handler);
+                if (_eventHandlers[eventType].Count == 0)
                 {
-                    _subscribers.Remove(eventType);
+                    _eventHandlers.Remove(eventType);
                 }
             }
         }
@@ -56,22 +51,23 @@ namespace PatternCipher.Client.Core.Events
         public void Publish<TEvent>(TEvent eventInstance) where TEvent : GameEvent
         {
             Type eventType = typeof(TEvent);
-            if (_subscribers.ContainsKey(eventType))
+            if (_eventHandlers.ContainsKey(eventType))
             {
-                // Create a copy of the list to avoid issues if a handler unsubscribes itself
-                List<Delegate> handlers = new List<Delegate>(_subscribers[eventType]);
+                // Create a copy of the list to avoid issues if a handler unsubscribes itself during invocation
+                List<Delegate> handlers = new List<Delegate>(_eventHandlers[eventType]);
                 foreach (Delegate handlerDelegate in handlers)
                 {
-                    try
+                    if (handlerDelegate is Action<TEvent> typedHandler)
                     {
-                        if (handlerDelegate is Action<TEvent> typedHandler)
+                        try
                         {
                             typedHandler.Invoke(eventInstance);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"Error invoking event handler for {eventType.Name}: {ex}");
+                        catch (Exception ex)
+                        {
+                            // Log the exception, e.g., using UnityEngine.Debug.LogError
+                            UnityEngine.Debug.LogError($"Error invoking event handler for {eventType.Name}: {ex.Message}\n{ex.StackTrace}");
+                        }
                     }
                 }
             }

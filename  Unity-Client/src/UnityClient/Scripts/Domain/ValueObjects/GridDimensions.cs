@@ -1,9 +1,7 @@
 using System;
-using PatternCipher.Client.Domain.ValueObjects; // For GridPosition
 
 namespace PatternCipher.Client.Domain.ValueObjects
 {
-    [System.Serializable] // Useful for Unity Inspector
     public struct GridDimensions : IEquatable<GridDimensions>
     {
         public readonly int Rows;
@@ -22,7 +20,7 @@ namespace PatternCipher.Client.Domain.ValueObjects
             return position.Row >= 0 && position.Row < Rows &&
                    position.Column >= 0 && position.Column < Columns;
         }
-
+        
         public int TotalCells => Rows * Columns;
 
         public override bool Equals(object obj)

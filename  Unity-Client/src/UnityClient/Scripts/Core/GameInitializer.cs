@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Threading.Tasks;
-using PatternCipher.Client.Infrastructure.Firebase; // Assuming FirebaseServiceInitializer is here
 using PatternCipher.Client.Core.Events;
-using PatternCipher.Client.Presentation.Screens; // Assuming ScreenManager is here
-using PatternCipher.Client.Presentation.Input; // Assuming InputHandler is here
-using PatternCipher.Client.DataPersistence.Services; // Assuming SaveLoadService and CloudSyncService are here
+using PatternCipher.Client.Presentation.Screens;
+using PatternCipher.Client.Presentation.Input;
+using PatternCipher.Client.DataPersistence.Services;
+using PatternCipher.Client.Infrastructure.Firebase;
 
 namespace PatternCipher.Client.Core
 {
@@ -12,16 +12,14 @@ namespace PatternCipher.Client.Core
     {
         public static GameInitializer Instance { get; private set; }
 
-        // Assuming these service references will be set up, e.g., via DI or GetComponent
-        // For simplicity, let's assume they might be components on the same GameObject or singletons themselves
-        // Or they are passed in/found. The spec mentions responsibilities for initializing them.
-
-        private FirebaseServiceInitializer _firebaseServiceInitializer;
-        private ScreenManager _screenManager;
-        private InputHandler _inputHandler;
-        private SaveLoadService _saveLoadService;
-        private CloudSyncService _cloudSyncService;
-        private FirebaseRemoteConfigService _firebaseRemoteConfigService; // Assuming this service exists
+        [Header("Core Services")]
+        [SerializeField] private FirebaseServiceInitializer firebaseServiceInitializer;
+        [SerializeField] private FirebaseRemoteConfigService firebaseRemoteConfigService; // As per detailed SDS
+        // GlobalEventBus is a static singleton, no need to serialize
+        [SerializeField] private ScreenManager screenManager;
+        [SerializeField] private InputHandler inputHandler; // Assuming InputHandler is a MonoBehaviour service
+        [SerializeField] private SaveLoadService saveLoadService;
+        [SerializeField] private CloudSyncService cloudSyncService;
 
         private void Awake()
         {
@@ -29,14 +27,7 @@ namespace PatternCipher.Client.Core
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                // Initialize references if needed, e.g., GetComponent or find
-                _firebaseServiceInitializer = GetComponent<FirebaseServiceInitializer>() ?? FindObjectOfType<FirebaseServiceInitializer>(); // Example
-                _screenManager = GetComponent<ScreenManager>() ?? FindObjectOfType<ScreenManager>();
-                _inputHandler = GetComponent<InputHandler>() ?? FindObjectOfType<InputHandler>();
-                _saveLoadService = new SaveLoadService(); // Example: Or find/inject
-                _cloudSyncService = new CloudSyncService(); // Example: Or find/inject
-                _firebaseRemoteConfigService = new FirebaseRemoteConfigService(); // Example: Or find/inject
-
+                InitializeCoreSystems(); // Sync initializations
             }
             else
             {
@@ -44,85 +35,89 @@ namespace PatternCipher.Client.Core
             }
         }
 
-        private async void Start() // Unity's Start can be async void
+        private async void Start()
         {
-            await InitializeAsync();
-        }
-
-        private async Task InitializeAsync()
-        {
-            // Order of initialization based on responsibilities
-            InitializeCoreSystems(); // GlobalEventBus is initialized here via its singleton nature
-
-            if (_firebaseServiceInitializer != null) // Check if found/assigned
-            {
-                await InitializeFirebaseAsync();
-            }
-            else
-            {
-                Debug.LogError("FirebaseServiceInitializer not found.");
-            }
-            
-            if (_firebaseRemoteConfigService != null) // Example: Load remote config after Firebase init
-            {
-                // await _firebaseRemoteConfigService.FetchAndActivateAsync(); // As per spec
-            }
-
-
-            await LoadPlayerDataAsync();
-            
-            TransitionToInitialScreen();
-        }
-
-        private async Task InitializeFirebaseAsync()
-        {
-            // Responsibility: "Initializes Firebase" via FirebaseServiceInitializer
-            // The spec says "Calls Firebase SDK initialization." which is handled by FirebaseServiceInitializer
-            if (_firebaseServiceInitializer != null)
-            {
-                // await _firebaseServiceInitializer.InitializeFirebaseAsync(); // As per spec on FirebaseServiceInitializer
-                Debug.Log("Firebase Initialization would be called here via FirebaseServiceInitializer.");
-            }
+            await InitializeAsyncSystems();
         }
 
         private void InitializeCoreSystems()
         {
-            // Responsibility: "Initializes non-async core managers."
-            // GlobalEventBus: Singleton, usually self-initializes or GameInitializer ensures it's ready.
-            // ScreenManager: Assumed to be set up.
-            // InputHandler: Assumed to be set up.
-            // SaveLoadService: Instantiated or found.
-            // CloudSyncService: Instantiated or found.
-            Debug.Log("Core Systems (GlobalEventBus, ScreenManager, InputHandler, SaveLoadService, CloudSyncService) initialized.");
+            // Initialize non-async core managers and systems that don't have external dependencies yet
+            // e.g., GlobalEventBus is accessed via its static Instance property
+            if (screenManager == null) Debug.LogError("ScreenManager is not assigned in GameInitializer.");
+            if (inputHandler == null) Debug.LogError("InputHandler is not assigned in GameInitializer.");
+            if (saveLoadService == null) Debug.LogError("SaveLoadService is not assigned in GameInitializer.");
+            if (cloudSyncService == null) Debug.LogError("CloudSyncService is not assigned in GameInitializer.");
+            
+            // Further synchronous initializations if needed
+            Debug.Log("Core systems initialized (synchronous part).");
+        }
+
+        private async Task InitializeAsyncSystems()
+        {
+            if (firebaseServiceInitializer == null)
+            {
+                Debug.LogError("FirebaseServiceInitializer is not assigned.");
+            }
+            else
+            {
+                 await InitializeFirebaseAsync();
+            }
+
+            if (firebaseRemoteConfigService == null)
+            {
+                Debug.LogError("FirebaseRemoteConfigService is not assigned.");
+            }
+            else
+            {
+                // Assuming FetchAndActivateAsync is part of its initialization or called here
+                // await firebaseRemoteConfigService.FetchAndActivateAsync(); 
+                Debug.Log("Firebase Remote Config Loaded (Placeholder).");
+            }
+            
+            await LoadPlayerDataAsync();
+            
+            TransitionToInitialScreen();
+            Debug.Log("Async systems initialization complete.");
+        }
+        
+        private async Task InitializeFirebaseAsync()
+        {
+            if (firebaseServiceInitializer != null)
+            {
+                await firebaseServiceInitializer.InitializeFirebaseAsync();
+                Debug.Log("Firebase initialized.");
+            }
+            else
+            {
+                Debug.LogError("FirebaseServiceInitializer is not assigned in GameInitializer.");
+            }
         }
 
         private async Task LoadPlayerDataAsync()
         {
-            // Responsibility: "Loads player data from local and syncs with cloud."
-            if (_saveLoadService != null)
+            if (saveLoadService != null)
             {
-                // Example: await _saveLoadService.LoadPlayerProgressAsync();
-                Debug.Log("Player Data Loading (local) would be called here.");
+                // Example: var_playerData = await saveLoadService.LoadAsync<PlayerProfileData>("playerProfile.dat");
+                Debug.Log("Player data loaded (local placeholder).");
             }
-            if (_cloudSyncService != null)
+            if (cloudSyncService != null)
             {
-                // Example: await _cloudSyncService.SyncAsync();
-                Debug.Log("Player Data Sync (cloud) would be called here.");
+                // await cloudSyncService.SyncAsync();
+                Debug.Log("Player data synced with cloud (placeholder).");
             }
-            await Task.CompletedTask; // Placeholder
         }
 
         private void TransitionToInitialScreen()
         {
-            // Responsibility: "Decides and shows the initial screen using ScreenManager."
-            if (_screenManager != null)
+            if (screenManager != null)
             {
-                // Example: _screenManager.ShowOnlyScreen<MainMenuController>(); // Assuming MainMenuController exists
-                Debug.Log("Transitioning to initial screen.");
+                // Example: screenManager.ShowOnlyScreen<MainMenuController>(); // Or some other initial screen
+                Debug.Log("Transitioning to initial screen (placeholder).");
             }
             else
             {
-                Debug.LogError("ScreenManager not found for initial screen transition.");
+                Debug.LogError("ScreenManager not available to transition to initial screen.");
             }
         }
     }

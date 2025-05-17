@@ -1,18 +1,8 @@
 using System.Threading.Tasks;
-using PatternCipher.Client.Domain.Aggregates; // For PlayerProgressAggregate
+using PatternCipher.Client.Domain.Aggregates; // For PlayerProgressAggregate (assumed to exist)
 
-// If PlayerProgressAggregate is not defined elsewhere yet, create a placeholder for compilation.
-// This should ideally be in its own file: PatternCipher.Client.Domain.Aggregates.PlayerProgressAggregate.cs
-namespace PatternCipher.Client.Domain.Aggregates
-{
-    // Placeholder: Actual PlayerProgressAggregate would have properties for progress
-    public class PlayerProgressAggregate 
-    {
-        public string PlayerId { get; set; }
-        public int TotalStars { get; set; }
-        // ... other overall progress data
-    }
-}
+// Assuming PlayerProgressAggregate exists in this namespace or is imported
+// namespace PatternCipher.Client.Domain.Aggregates { public class PlayerProgressAggregate { /* ... */ } }
 
 
 namespace PatternCipher.Client.Domain.Repositories
@@ -21,6 +11,7 @@ namespace PatternCipher.Client.Domain.Repositories
     {
         Task SaveProgressAsync(PlayerProgressAggregate progress);
         Task<PlayerProgressAggregate> LoadProgressAsync();
-        Task DeleteProgressAsync(); // Optional: For resetting player progress
+        Task DeleteProgressAsync();
+        Task<bool> HasSavedProgressAsync();
     }
 }

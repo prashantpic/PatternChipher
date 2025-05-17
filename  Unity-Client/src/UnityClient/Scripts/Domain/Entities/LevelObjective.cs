@@ -1,72 +1,71 @@
 using PatternCipher.Client.Domain.Aggregates; // For GridAggregate, LevelProfileAggregate
-using PatternCipher.Client.Domain.ValueObjects; // For GridPattern if needed
+// Potentially ValueObjects if target patterns use GridPosition etc.
+// using PatternCipher.Client.Domain.ValueObjects; 
 
 namespace PatternCipher.Client.Domain.Entities
 {
     public enum ObjectiveType
     {
-        CollectSymbol,      // Collect X amount of Y symbol
-        ClearTiles,         // Clear X number of tiles
-        ReachScore,         // Reach X score
-        PatternMatch,       // Match a specific pattern on the grid
-        DefeatBoss          // Example complex objective
-        // Add more types as needed
+        ClearAllTiles,
+        CollectSpecificSymbols,
+        AchieveScore,
+        BreakBlockers,
+        MatchPattern
+        // Add other objective types
     }
-
-    // Placeholder for a GridPattern if complex pattern matching is needed.
-    // public struct GridPattern { /* ... definition ... */ }
 
     public class LevelObjective
     {
         public ObjectiveType Type { get; private set; }
-        
-        // Parameters specific to ObjectiveType
-        public string TargetSymbolId { get; private set; } // For CollectSymbol
-        public int RequiredCount { get; private set; }    // For CollectSymbol, ClearTiles
-        public int TargetScore { get; private set; }      // For ReachScore
-        // public GridPattern TargetPattern { get; private set; } // For PatternMatch
+        public string TargetSymbolId { get; private set; } // For CollectSpecificSymbols
+        public int RequiredCount { get; private set; }    // For CollectSpecificSymbols, BreakBlockers
+        public int TargetScore { get; private set; }      // For AchieveScore
+        // public GridPattern TargetPattern { get; private set; } // For MatchPattern (GridPattern would be a custom VO)
 
-        // TODO: Expand constructor and properties based on specific objective needs
-        public LevelObjective(ObjectiveType type, int requiredCount = 0, string targetSymbolId = null, int targetScore = 0)
+        // Example constructor, can be overloaded or use a factory
+        public LevelObjective(ObjectiveType type, int targetScore = 0, string targetSymbolId = null, int requiredCount = 0)
         {
             Type = type;
-            RequiredCount = requiredCount;
-            TargetSymbolId = targetSymbolId;
             TargetScore = targetScore;
+            TargetSymbolId = targetSymbolId;
+            RequiredCount = requiredCount;
         }
 
         public bool IsCompleted(GridAggregate currentGrid, LevelProfileAggregate levelProfile)
         {
             if (currentGrid == null || levelProfile == null)
             {
-                // Or throw ArgumentNullException
-                return false; 
+                // Consider logging an error or throwing an ArgumentNullException
+                return false;
             }
 
             switch (Type)
             {
-                case ObjectiveType.CollectSymbol:
-                    // Example: Check levelProfile.CollectedSymbols[TargetSymbolId] >= RequiredCount
-                    // This assumes LevelProfileAggregate tracks collected symbols.
-                    // This logic might need more detailed info from LevelProfileAggregate or GridAggregate.
-                    // For now, a placeholder:
-                    // int collected = levelProfile.GetCollectedSymbolCount(TargetSymbolId);
-                    // return collected >= RequiredCount;
-                    return false; // Placeholder
-                
-                case ObjectiveType.ClearTiles:
-                    // Example: Check levelProfile.TilesCleared >= RequiredCount
-                    // return levelProfile.TilesCleared >= RequiredCount;
-                     return false; // Placeholder
-
-                case ObjectiveType.ReachScore:
+                case ObjectiveType.AchieveScore:
                     return levelProfile.CurrentScore >= TargetScore;
-
-                case ObjectiveType.PatternMatch:
-                    // Example: Check currentGrid against TargetPattern
-                    // return currentGrid.MatchesPattern(TargetPattern);
-                    return false; // Placeholder
                 
+                case ObjectiveType.CollectSpecificSymbols:
+                    // This would require levelProfile to track collected symbols or query grid for specific symbols that are "collected"
+                    // For simplicity, let's assume levelProfile tracks collected counts.
+                    // return levelProfile.GetCollectedSymbolCount(TargetSymbolId) >= RequiredCount;
+                    return false; // Placeholder: Requires more state in LevelProfileAggregate or different logic
+
+                case ObjectiveType.ClearAllTiles:
+                    // This would typically mean no "matchable" or "blocker" tiles remain.
+                    // Requires GridAggregate to provide information about remaining clearable tiles.
+                    // return currentGrid.GetRemainingClearableTilesCount() == 0;
+                    return false; // Placeholder
+
+                case ObjectiveType.BreakBlockers:
+                    // Similar to ClearAllTiles, but specific to blocker-type tiles.
+                    // return currentGrid.GetRemainingBlockerTilesCount() == 0;
+                     return false; // Placeholder
+                
+                case ObjectiveType.MatchPattern:
+                    // This would involve checking if a specific pattern of symbols exists on the grid.
+                    // return currentGrid.CheckForPattern(TargetPattern);
+                    return false; // Placeholder
+
                 default:
                     return false;
             }

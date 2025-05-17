@@ -4,34 +4,24 @@ namespace PatternCipher.Client.Domain.Entities
     {
         None,
         Bomb,
-        LineClear,
-        ColorClear
-        // Add more special types as needed
+        LineClearHorizontal,
+        LineClearVertical,
+        ColorBomb,
+        // Add more special types
     }
 
     public class Symbol
     {
         public string Id { get; private set; }
         public bool IsSpecial { get; private set; }
-        public SpecialType Type { get; private set; }
+        public SpecialType SpecialAbilityType { get; private set; }
+        // Add other gameplay-relevant characteristics if needed
 
-        // Constructor for a normal symbol
-        public Symbol(string id)
+        public Symbol(string id, bool isSpecial = false, SpecialType specialType = SpecialType.None)
         {
             Id = id;
-            IsSpecial = false;
-            Type = SpecialType.None;
+            IsSpecial = isSpecial;
+            SpecialAbilityType = specialType;
         }
-
-        // Constructor for a special symbol
-        public Symbol(string id, SpecialType specialType)
-        {
-            Id = id;
-            IsSpecial = true;
-            Type = specialType;
-        }
-
-        // Add any domain-relevant properties or methods here
-        // For example, rules for how this symbol interacts or matches.
     }
 }

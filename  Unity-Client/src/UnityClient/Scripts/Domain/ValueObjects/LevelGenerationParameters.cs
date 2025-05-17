@@ -3,54 +3,41 @@ using PatternCipher.Client.Domain.ValueObjects; // For GridDimensions
 
 namespace PatternCipher.Client.Domain.ValueObjects
 {
-    // Define a simple enum for difficulty or use a more complex struct/class if needed
-    public enum DifficultySetting
-    {
-        Easy,
-        Medium,
-        Hard,
-        Custom
-    }
-
     public class LevelGenerationParameters
     {
         public GridDimensions Dimensions { get; }
         public List<string> AllowedSymbolIds { get; }
-        public int MinMovesToSolve { get; } // Or target par moves
-        public DifficultySetting Difficulty { get; }
-        
-        // Example of special tile parameters
-        public int MinSpecialTiles { get; }
-        public int MaxSpecialTiles { get; }
-        public List<string> AllowedSpecialSymbolIds { get; } // If special symbols have their own IDs
+        public int MinMovesToSolve { get; } // Or a difficulty metric
+        public int MaxMovesToSolve { get; } // Optional upper bound for complexity
+        public int NumberOfColors { get; } // Example of symbol variety constraint
+        public Dictionary<string, int> RequiredSpecialTiles { get; } // e.g., {"BOMB_ID", 2}
 
-        // Example of objective configurations
-        // This could be a more complex structure or a factory method to create LevelObjective
-        public string ObjectiveTypeKey { get; } // e.g., "CollectSymbol", "ClearTiles"
-        public Dictionary<string, object> ObjectiveParameters { get; }
+        // Add other parameters: e.g., objective type hints, blocker density, etc.
+        // public ObjectiveTypeHint ObjectiveType { get; }
+        // public float BlockerDensity { get; }
+
 
         public LevelGenerationParameters(
             GridDimensions dimensions,
             List<string> allowedSymbolIds,
             int minMovesToSolve,
-            DifficultySetting difficulty,
-            int minSpecialTiles = 0,
-            int maxSpecialTiles = 0,
-            List<string> allowedSpecialSymbolIds = null,
-            string objectiveTypeKey = null,
-            Dictionary<string, object> objectiveParameters = null)
+            int numberOfColors,
+            int maxMovesToSolve = 0, // 0 could mean no explicit max
+            Dictionary<string, int> requiredSpecialTiles = null)
         {
             Dimensions = dimensions;
             AllowedSymbolIds = allowedSymbolIds ?? new List<string>();
             MinMovesToSolve = minMovesToSolve;
-            Difficulty = difficulty;
-            MinSpecialTiles = minSpecialTiles;
-            MaxSpecialTiles = maxSpecialTiles;
-            AllowedSpecialSymbolIds = allowedSpecialSymbolIds ?? new List<string>();
-            ObjectiveTypeKey = objectiveTypeKey;
-            ObjectiveParameters = objectiveParameters ?? new Dictionary<string, object>();
-        }
+            NumberOfColors = numberOfColors;
+            MaxMovesToSolve = maxMovesToSolve;
+            RequiredSpecialTiles = requiredSpecialTiles ?? new Dictionary<string, int>();
 
-        // Consider adding validation or factory methods for robust creation
+            if (AllowedSymbolIds.Count == 0 && numberOfColors > 0)
+            {
+                // Potentially generate default symbol IDs based on numberOfColors
+                // For now, assume AllowedSymbolIds are provided if specific IDs are needed,
+                // or numberOfColors is used by generator to pick from a predefined palette.
+            }
+        }
     }
 }
