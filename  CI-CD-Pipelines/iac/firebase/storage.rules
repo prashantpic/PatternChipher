@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is the owner of a resource path
+    // Assumes paths like /users/{userId}/...
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User-specific files (e.g., profile pictures, cloud saves)
+    // Users can read and write to their own designated folder.
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId)
+                   // Example: Max file size 5MB for user uploads
+                   && request.resource.size < 5 * 1024 * 1024
+                   // Example: Allow only specific image types or save data types
+                   && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/octet-stream');
+    }
+
+    // Publicly readable assets (e.g., game assets, common configuration files)
+    // These are typically uploaded by admins/deployment process.
+    match /public/{allPaths=**} {
+      allow read: if true; // Or `if isAuthenticated();` if login required
+      allow write: if request.auth != null && request.auth.token.admin == true; // Example: Admin-only write access
+    }
+    
+    // Game assets (e.g., Addressables if served from Storage)
+    // These are typically read-only for clients.
+    match /game-assets/{version}/{platform}/{allPaths=**} {
+        allow read: if isAuthenticated(); // All authenticated users can download game assets
+        allow write: if request.auth != null && request.auth.token.admin == true; // Only admins can upload/update assets
+    }
+
+    // Default deny all other paths and operations
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

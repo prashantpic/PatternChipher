@@ -1,0 +1,150 @@
+name: Main CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  UNITY_VERSION: "2022.3.10f1" # Placeholder: Use actual version from REPO-UNITY-CLIENT
+  NODE_VERSION: "18.x" # Placeholder: Use actual version from REPO-FIREBASE-BACKEND
+
+jobs:
+  lint-config:
+    name: Lint Configuration Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install yamllint
+        run: npm install -g yamllint
+
+      - name: Run yamllint
+        working-directory: REPO-CI-CD
+        run: yamllint --config-file tool-config/linters/.yamllint.yml .
+
+  ci-unity-client:
+    name: CI Unity Client
+    needs: lint-config
+    runs-on: ubuntu-latest # Consider Unity-specific runner for performance if available
+    steps:
+      - name: Checkout REPO-UNITY-CLIENT
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-UNITY-CLIENT # Placeholder repository name
+          path: REPO-UNITY-CLIENT
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }} # If private repo and default token lacks access
+
+      - name: Checkout REPO-CI-CD (for reusable workflows and scripts)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Build Unity Client (Editor Debug)
+        uses: ./REPO-CI-CD/.github/workflows/reusable/build-unity-client.yml
+        with:
+          targetPlatform: StandaloneLinux64 # Or another Editor-compatible target for simple build/test
+          buildConfiguration: Debug
+          unityVersion: ${{ env.UNITY_VERSION }}
+          projectPath: REPO-UNITY-CLIENT
+        secrets:
+          UNITY_LICENSE_CONTENT_SECRET: ${{ secrets.UNITY_LICENSE_CONTENT_SECRET }}
+          UNITY_EMAIL_SECRET: ${{ secrets.UNITY_EMAIL_SECRET }} # Optional, if license content not used
+          UNITY_PASSWORD_SECRET: ${{ secrets.UNITY_PASSWORD_SECRET }} # Optional
+          UNITY_SERIAL_SECRET: ${{ secrets.UNITY_SERIAL_SECRET }} # Optional
+
+      - name: Run Unity Tests
+        run: |
+          chmod +x REPO-CI-CD/scripts/test/run-unity-tests.sh
+          REPO-CI-CD/scripts/test/run-unity-tests.sh
+        env:
+          UNITY_EXECUTABLE_PATH: "" # This should be set by Unity setup action or known path
+          PROJECT_PATH: REPO-UNITY-CLIENT
+          TEST_PLATFORM: editmode # Run playmode tests as well if configured
+          TEST_RESULTS_PATH: REPO-UNITY-CLIENT/test-results/editmode-results.xml
+
+      - name: Upload Unity Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: REPO-UNITY-CLIENT/test-results/
+
+      - name: Run Vulnerability Scan on Unity Client
+        uses: ./REPO-CI-CD/.github/workflows/reusable/run-vulnerability-scan.yml
+        with:
+          projectPathClient: REPO-UNITY-CLIENT
+          scanType: Dependency
+        secrets:
+          SNYK_TOKEN_SECRET: ${{ secrets.SNYK_TOKEN_SECRET }}
+
+  ci-firebase-backend:
+    name: CI Firebase Backend
+    needs: lint-config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout REPO-FIREBASE-BACKEND
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-FIREBASE-BACKEND # Placeholder repository name
+          path: REPO-FIREBASE-BACKEND
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }} # If private repo
+
+      - name: Checkout REPO-CI-CD (for scripts and IaC)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Firebase Tools
+        run: |
+          chmod +x REPO-CI-CD/scripts/utils/setup-firebase-tools.sh
+          REPO-CI-CD/scripts/utils/setup-firebase-tools.sh
+        env:
+          FIREBASE_SERVICE_ACCOUNT_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV_SECRET }} # Use a dev/test SA for CI
+
+      - name: Build Firebase Functions
+        run: |
+          chmod +x REPO-CI-CD/scripts/build/build-firebase-functions.sh
+          REPO-CI-CD/scripts/build/build-firebase-functions.sh
+        env:
+          FUNCTIONS_DIR: REPO-FIREBASE-BACKEND/backend/firebase-functions # Adjust if path differs
+
+      - name: Run Firebase Tests
+        run: |
+          chmod +x REPO-CI-CD/scripts/test/run-firebase-tests.sh
+          REPO-CI-CD/scripts/test/run-firebase-tests.sh
+        env:
+          FUNCTIONS_DIR: REPO-FIREBASE-BACKEND/backend/firebase-functions # Adjust if path differs
+
+      - name: Upload Firebase Test Results (if any)
+        uses: actions/upload-artifact@v4
+        if: always() # Or on success/failure based on test runner output
+        with:
+          name: firebase-test-results
+          path: REPO-FIREBASE-BACKEND/backend/firebase-functions/coverage/ # Or other test report path
+
+      - name: Run Vulnerability Scan on Firebase Backend
+        uses: ./REPO-CI-CD/.github/workflows/reusable/run-vulnerability-scan.yml
+        with:
+          projectPathBackend: REPO-FIREBASE-BACKEND/backend/firebase-functions # Adjust if path differs
+          scanType: Dependency
+        secrets:
+          SNYK_TOKEN_SECRET: ${{ secrets.SNYK_TOKEN_SECRET }}

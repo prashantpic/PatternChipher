@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "default": "patterncipher-dev",
+    "dev": "patterncipher-dev",
+    "staging": "patterncipher-staging",
+    "production": "patterncipher-prod"
+  },
+  "targets": {
+    "patterncipher-prod": {
+      "hosting": [
+        "patterncipher-app-prod"
+      ]
+    },
+    "patterncipher-staging": {
+      "hosting": [
+        "patterncipher-app-staging"
+      ]
+    }
+  },
+  "etags": {}
+}

@@ -1,0 +1,148 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Nightly at midnight UTC
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Type of task to run'
+        required: true
+        default: 'nightly_build'
+        type: choice
+        options:
+          - nightly_build
+          - extended_tests
+          - security_scan
+      branch:
+        description: 'Branch to target for tasks'
+        required: true
+        default: 'develop'
+        type: string
+
+env:
+  UNITY_VERSION: "2022.3.10f1" # Placeholder
+  NODE_VERSION: "18.x" # Placeholder
+
+jobs:
+  nightly-build:
+    name: Nightly Unity Build
+    if: github.event_name == 'schedule' || github.event.inputs.task_type == 'nightly_build'
+    runs-on: ubuntu-latest # Or Unity compatible runner
+    steps:
+      - name: Checkout REPO-UNITY-CLIENT
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-UNITY-CLIENT # Placeholder
+          ref: ${{ github.event.inputs.branch || 'develop' }}
+          path: REPO-UNITY-CLIENT
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }}
+
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Perform Nightly Build (e.g., Android Debug)
+        uses: ./REPO-CI-CD/.github/workflows/reusable/build-unity-client.yml
+        with:
+          targetPlatform: Android
+          buildConfiguration: Debug
+          unityVersion: ${{ env.UNITY_VERSION }}
+          projectPath: REPO-UNITY-CLIENT
+          buildVersion: "nightly-${{ github.event.inputs.branch || 'develop' }}-${{ github.run_id }}"
+        secrets:
+          UNITY_LICENSE_CONTENT_SECRET: ${{ secrets.UNITY_LICENSE_CONTENT_SECRET }}
+          # UNITY_EMAIL_SECRET: ${{ secrets.UNITY_EMAIL_SECRET }}
+          # UNITY_PASSWORD_SECRET: ${{ secrets.UNITY_PASSWORD_SECRET }}
+          # UNITY_SERIAL_SECRET: ${{ secrets.UNITY_SERIAL_SECRET }}
+      
+      # Optionally upload nightly build artifacts (they might expire quickly)
+      - name: Upload Nightly Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-build-android-debug
+          path: REPO-UNITY-CLIENT/Builds/Android/* # Adjust as per build output
+          retention-days: 7 # Keep nightly artifacts for a week
+
+  extended-test-run:
+    name: Extended Test Run
+    if: github.event.inputs.task_type == 'extended_tests' # Only run on manual dispatch for now
+    runs-on: ubuntu-latest # Or specific runners if tests require it
+    steps:
+      - name: Checkout REPO-UNITY-CLIENT
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-UNITY-CLIENT # Placeholder
+          ref: ${{ github.event.inputs.branch || 'develop' }}
+          path: REPO-UNITY-CLIENT
+
+      - name: Checkout REPO-FIREBASE-BACKEND
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-FIREBASE-BACKEND # Placeholder
+          ref: ${{ github.event.inputs.branch || 'develop' }} # Or main if testing against stable backend
+          path: REPO-FIREBASE-BACKEND
+
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+      
+      - name: Setup Environment (Node, Firebase Emulators, etc.)
+        run: echo "Setting up extended test environment..." # Placeholder
+
+      - name: Run Extended Tests (e.g., Integration Tests with Emulators)
+        run: |
+          echo "Running extended tests for Unity Client and Firebase Backend..."
+          # Placeholder for actual test execution scripts
+          # Example: REPO-CI-CD/scripts/test/run-unity-integration-tests.sh
+          # Example: REPO-CI-CD/scripts/test/run-firebase-integration-tests.sh
+        # env:
+          # Pass necessary secrets for services if tests hit real staging services
+          # FIREBASE_SERVICE_ACCOUNT_STAGING_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING_SECRET }}
+
+      - name: Upload Extended Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extended-test-results
+          path: extended-test-reports/ # Placeholder
+
+  periodic-security-scan:
+    name: Periodic Comprehensive Security Scan
+    if: github.event_name == 'schedule' || github.event.inputs.task_type == 'security_scan'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout REPO-UNITY-CLIENT
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-UNITY-CLIENT # Placeholder
+          ref: ${{ github.event.inputs.branch || 'develop' }}
+          path: REPO-UNITY-CLIENT
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }}
+
+      - name: Checkout REPO-FIREBASE-BACKEND
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-FIREBASE-BACKEND # Placeholder
+          ref: ${{ github.event.inputs.branch || 'develop' }} # Or main
+          path: REPO-FIREBASE-BACKEND
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }}
+
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Run Comprehensive Vulnerability Scan
+        uses: ./REPO-CI-CD/.github/workflows/reusable/run-vulnerability-scan.yml
+        with:
+          projectPathClient: REPO-UNITY-CLIENT
+          projectPathBackend: REPO-FIREBASE-BACKEND/backend/firebase-functions # Adjust if path differs
+          scanType: "Dependency,Code" # Example for a more comprehensive scan
+        secrets:
+          SNYK_TOKEN_SECRET: ${{ secrets.SNYK_TOKEN_SECRET }}
+
+      # Optionally, configure reporting or issue creation based on scan results
+      # This might involve additional Snyk CLI commands or other tools

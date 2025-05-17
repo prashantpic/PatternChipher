@@ -1,0 +1,91 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is the owner of a document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User Profiles: Users can read their own profile, admins can read any.
+    // Users can create and update their own profile.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || get(/databases/$(database)/documents/admins/$(request.auth.uid)).exists;
+      allow create: if isOwner(userId)
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.email == request.auth.token.email; // Example: enforce email match
+      allow update: if isOwner(userId)
+                    && request.resource.data.keys().hasOnly(['displayName', 'updatedAt', 'avatarUrl', 'settings']); // Example: restrict updatable fields
+                    // Cannot change email or createdAt
+      // No delete for user profiles by users, soft delete via a flag if needed.
+    }
+
+    // Game Progress: Users can read, create, and update their own progress.
+    match /playerProgress/{playerId}/{levelId} {
+      allow read, write: if isOwner(playerId);
+      // Additional validation for create/update:
+      // e.g., ensure starsEarned is a number between 0 and 3
+      // ensure completionStatus is one of ['NotStarted', 'InProgress', 'Completed']
+      // ensure score submitted matches server-side calculation if sensitive
+    }
+    
+    match /playerProgress/{playerId} {
+        // Allow listing levels for a player by that player
+        allow list: if isOwner(playerId);
+    }
+
+
+    // Leaderboards: All authenticated users can read.
+    // Writes (score submissions) should ideally go through a Cloud Function for validation.
+    match /leaderboards/{leaderboardId}/entries/{entryId} {
+      allow read: if isAuthenticated();
+      // Disallow direct writes from client to prevent cheating.
+      // Scores should be submitted via a Cloud Function that validates the score.
+      allow write: if false; // Example: only backend/admin can write
+    }
+    
+    match /leaderboards/{leaderboardId} {
+        allow list: if isAuthenticated(); // Allow listing entries for a leaderboard
+    }
+
+    // Achievements: Users can read their own achievements.
+    // Unlocking achievements should typically be handled by Cloud Functions based on game events or progress.
+    match /achievements/{playerId}/{achievementId} {
+      allow read: if isOwner(playerId);
+      allow write: if false; // Example: only backend/admin can write
+    }
+    
+    match /achievements/{playerId} {
+        allow list: if isOwner(playerId);
+    }
+
+    // Game Configuration (e.g., puzzle definitions, level packs)
+    // Typically read-only for clients, writable by admin/deploy process.
+    match /gameConfig/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).exists; // Or some other admin check
+    }
+    match /gameConfig/{collectionId}/{docId} { // For nested config
+      allow read: if isAuthenticated();
+      allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).exists;
+    }
+
+
+    // Admin collection (example for role-based access)
+    match /admins/{adminId} {
+      allow read: if isOwner(adminId) || get(/databases/$(database)/documents/admins/$(request.auth.uid)).exists; // Admins can read other admin docs
+      allow write: if get(/databases/$(database)/documents/admins/$(request.auth.uid)).exists; // Only existing admins can modify
+    }
+
+    // Default deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

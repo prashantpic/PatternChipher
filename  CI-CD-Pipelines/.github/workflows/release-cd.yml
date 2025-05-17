@@ -1,0 +1,313 @@
+name: Release CD Pipeline
+
+on:
+  create:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Target Environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      build_platforms:
+        description: 'Build Platforms (comma-separated: iOS,Android)'
+        required: true
+        default: 'iOS,Android'
+        type: string
+      release_version:
+        description: 'Release Version (e.g., v1.0.0)'
+        required: true
+        default: 'v0.0.0' # Will be overridden by tag if triggered by tag
+
+env:
+  UNITY_VERSION: "2022.3.10f1" # Placeholder: Use actual version from REPO-UNITY-CLIENT
+  NODE_VERSION: "18.x" # Placeholder
+
+jobs:
+  determine-version:
+    name: Determine Release Version
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [[ "${{ github.event_name }}" == "create" && "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
+          fi
+
+  build-release-candidates:
+    name: Build Release Candidates (${{ matrix.platform }})
+    needs: determine-version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Build platforms can be controlled by workflow_dispatch input or hardcoded
+        # For simplicity, matching SDS which mentions matrix strategy
+        platform: [iOS, Android] # Potentially filter based on github.event.inputs.build_platforms
+        include:
+          - platform: iOS
+            os: macos-latest # Or a specific macOS version
+            targetPlatform: iOS
+          - platform: Android
+            os: ubuntu-latest
+            targetPlatform: Android
+    steps:
+      - name: Checkout REPO-UNITY-CLIENT
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-UNITY-CLIENT # Placeholder
+          ref: ${{ needs.determine-version.outputs.release_version }} # Checkout the tag
+          path: REPO-UNITY-CLIENT
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }}
+
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Build Unity Client Player
+        uses: ./REPO-CI-CD/.github/workflows/reusable/build-unity-client.yml
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildConfiguration: Release
+          unityVersion: ${{ env.UNITY_VERSION }}
+          projectPath: REPO-UNITY-CLIENT
+          buildVersion: ${{ needs.determine-version.outputs.release_version }}
+          # Pass keystore secrets for Android if reusable workflow handles it
+          # androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64_SECRET }}
+          # androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS_SECRET }}
+          # androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME_SECRET }}
+          # androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS_SECRET }}
+        secrets:
+          UNITY_LICENSE_CONTENT_SECRET: ${{ secrets.UNITY_LICENSE_CONTENT_SECRET }}
+          # UNITY_EMAIL_SECRET: ${{ secrets.UNITY_EMAIL_SECRET }}
+          # UNITY_PASSWORD_SECRET: ${{ secrets.UNITY_PASSWORD_SECRET }}
+          # UNITY_SERIAL_SECRET: ${{ secrets.UNITY_SERIAL_SECRET }}
+
+      - name: Build Unity Addressable Asset Bundles
+        # This step is per SDS 4.2; if reusable workflow handles bundles, this might be conditional or removed
+        run: |
+          chmod +x REPO-CI-CD/scripts/build/bundle-unity-assets.sh
+          REPO-CI-CD/scripts/build/bundle-unity-assets.sh
+        env:
+          PROJECT_PATH: REPO-UNITY-CLIENT
+          UNITY_EXECUTABLE_PATH: "" # Should be set by Unity setup from reusable workflow or known
+          OUTPUT_PATH: REPO-UNITY-CLIENT/AssetBundles/${{ matrix.targetPlatform }} # Example output path
+
+      - name: Upload Unity Player Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-player-${{ matrix.platform }}-${{ needs.determine-version.outputs.release_version }}
+          path: REPO-UNITY-CLIENT/Builds/${{ matrix.targetPlatform }}/* # Adjust path as per build script output
+
+      - name: Upload Unity Asset Bundles Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-assetbundles-${{ matrix.platform }}-${{ needs.determine-version.outputs.release_version }}
+          path: REPO-UNITY-CLIENT/AssetBundles/${{ matrix.targetPlatform }}/* # Adjust path
+
+  build-firebase-release:
+    name: Build Firebase Release Package
+    needs: determine-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout REPO-FIREBASE-BACKEND
+        uses: actions/checkout@v4
+        with:
+          repository: PatternCipher/REPO-FIREBASE-BACKEND # Placeholder
+          ref: ${{ needs.determine-version.outputs.release_version }} # Or main/develop depending on strategy
+          path: REPO-FIREBASE-BACKEND
+          # token: ${{ secrets.GH_PAT_FOR_OTHER_REPOS }}
+
+      - name: Checkout REPO-CI-CD
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build Firebase Functions
+        run: |
+          chmod +x REPO-CI-CD/scripts/build/build-firebase-functions.sh
+          REPO-CI-CD/scripts/build/build-firebase-functions.sh
+        env:
+          FUNCTIONS_DIR: REPO-FIREBASE-BACKEND/backend/firebase-functions
+
+      - name: Upload Firebase Functions Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firebase-functions-${{ needs.determine-version.outputs.release_version }}
+          path: REPO-FIREBASE-BACKEND/backend/firebase-functions # Upload the entire built functions dir
+
+  deploy-firebase-staging:
+    name: Deploy Firebase to Staging
+    needs: [determine-version, build-firebase-release]
+    if: github.event_name == 'create' || github.event.inputs.target_environment == 'staging' || github.event.inputs.target_environment == 'production' # Prod also deploys to staging first
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Checkout REPO-CI-CD (for reusable workflows, scripts, IaC)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      # Firebase functions artifact from build-firebase-release is used by deploy-firebase.yml implicitly if it expects source
+      # Or download artifact if deploy-firebase.yml expects a packaged zip
+      - name: Download Firebase Functions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: firebase-functions-${{ needs.determine-version.outputs.release_version }}
+          path: REPO-FIREBASE-BACKEND/backend/firebase-functions # Ensure this path matches what deploy-firebase expects
+
+      - name: Deploy Firebase Components to Staging
+        uses: ./REPO-CI-CD/.github/workflows/reusable/deploy-firebase.yml
+        with:
+          firebaseProjectAlias: staging
+          componentsToDeploy: functions,firestore:rules,storage:rules
+        secrets:
+          FIREBASE_SERVICE_ACCOUNT_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING_SECRET }}
+
+  deploy-unity-staging:
+    name: Deploy Unity Client to Staging (${{ matrix.platform }})
+    needs: [determine-version, build-release-candidates, deploy-firebase-staging] # Depends on firebase staging being ready
+    if: github.event_name == 'create' || github.event.inputs.target_environment == 'staging' || github.event.inputs.target_environment == 'production'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        platform: [iOS, Android] # Potentially filter based on github.event.inputs.build_platforms
+        include:
+          - platform: iOS
+            os: macos-latest
+          - platform: Android
+            os: ubuntu-latest # Fastlane can run on Linux for Android
+    environment:
+      name: staging
+    steps:
+      - name: Checkout REPO-CI-CD (for scripts and Fastlane config)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Download Unity Player Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-player-${{ matrix.platform }}-${{ needs.determine-version.outputs.release_version }}
+          path: build-artifact # e.g., build-artifact/app.ipa or build-artifact/app.aab
+
+      # Setup Fastlane (may involve Ruby setup, bundle install)
+      # This should ideally be part of the script or a reusable action
+      - name: Setup Fastlane
+        # Example steps - adjust based on actual Fastlane setup requirements
+        # Uses a generic Ruby setup action
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7' # Or version compatible with your Fastlane
+          bundler-cache: true # Cache gems
+        working-directory: REPO-CI-CD/tool-config/fastlane
+
+      - name: Deploy Unity via Fastlane (Staging)
+        run: |
+          chmod +x REPO-CI-CD/scripts/deploy/deploy-unity-via-fastlane.sh
+          REPO-CI-CD/scripts/deploy/deploy-unity-via-fastlane.sh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          LANE_NAME: beta # Staging lane
+          BUILD_PATH: build-artifact # Path to the downloaded .ipa/.aab, script needs to find the exact file
+          # Fastlane secrets passed as env vars
+          FASTLANE_USER: ${{ secrets.APPLE_ID_EMAIL_SECRET }} # Example for iOS
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD_SECRET }} # For TestFlight
+          MATCH_PASSWORD: ${{ secrets.FASTLANE_MATCH_PASSWORD_SECRET }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.FASTLANE_MATCH_GIT_BASIC_AUTH_SECRET }} # If using basic auth for match repo
+          # For Android
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY_SECRET }}
+
+
+  deploy-firebase-prod:
+    name: Deploy Firebase to Production
+    needs: [determine-version, build-firebase-release, deploy-firebase-staging] # Must pass staging first
+    if: github.event_name == 'create' || github.event.inputs.target_environment == 'production'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://your-app-prod-url.com # Placeholder
+    steps:
+      - name: Checkout REPO-CI-CD (for reusable workflows, scripts, IaC)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Download Firebase Functions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: firebase-functions-${{ needs.determine-version.outputs.release_version }}
+          path: REPO-FIREBASE-BACKEND/backend/firebase-functions
+
+      - name: Deploy Firebase Components to Production
+        uses: ./REPO-CI-CD/.github/workflows/reusable/deploy-firebase.yml
+        with:
+          firebaseProjectAlias: production
+          componentsToDeploy: functions,firestore:rules,storage:rules
+        secrets:
+          FIREBASE_SERVICE_ACCOUNT_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD_SECRET }}
+
+  deploy-unity-prod:
+    name: Deploy Unity Client to Production (${{ matrix.platform }})
+    needs: [determine-version, build-release-candidates, deploy-unity-staging, deploy-firebase-prod] # Must pass staging & firebase prod
+    if: github.event_name == 'create' || github.event.inputs.target_environment == 'production'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        platform: [iOS, Android] # Potentially filter
+        include:
+          - platform: iOS
+            os: macos-latest
+          - platform: Android
+            os: ubuntu-latest
+    environment:
+      name: production
+      url: https://your-app-store-link.com # Placeholder
+    steps:
+      - name: Checkout REPO-CI-CD (for scripts and Fastlane config)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      - name: Download Unity Player Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-player-${{ matrix.platform }}-${{ needs.determine-version.outputs.release_version }}
+          path: build-artifact
+
+      - name: Setup Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+        working-directory: REPO-CI-CD/tool-config/fastlane
+
+      - name: Deploy Unity via Fastlane (Production)
+        run: |
+          chmod +x REPO-CI-CD/scripts/deploy/deploy-unity-via-fastlane.sh
+          REPO-CI-CD/scripts/deploy/deploy-unity-via-fastlane.sh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          LANE_NAME: release # Production lane
+          BUILD_PATH: build-artifact
+          FASTLANE_USER: ${{ secrets.APPLE_ID_EMAIL_SECRET }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD_SECRET }}
+          MATCH_PASSWORD: ${{ secrets.FASTLANE_MATCH_PASSWORD_SECRET }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.FASTLANE_MATCH_GIT_BASIC_AUTH_SECRET }}
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_JSON_KEY_SECRET }}
