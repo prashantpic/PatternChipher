@@ -4,7 +4,7 @@ package PatternCipher.ProtoModels.Cloud;
 
 option csharp_namespace = "PatternCipher.Models.Cloud";
 
-import "Cloud/CloudSave.proto"; // Relative path from Protos root
+import "Protos/Cloud/CloudSave.proto";
 import "google/protobuf/timestamp.proto";
 
 // Root message for a user's cloud profile document in Firestore.
