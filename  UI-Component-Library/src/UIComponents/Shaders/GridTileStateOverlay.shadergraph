@@ -1,0 +1,22 @@
+{
+    "ShaderGraphVersion": 1,
+    "DisplayName": "GridTileStateOverlay",
+    "Description": "Shader Graph for visual overlays on tiles indicating states like 'locked', 'obstacle' (REQ-UIX-015). This is a conceptual representation; actual Shader Graph is a visual asset.",
+    "Path": "PatternCipher/UI/GridTileStateOverlay", // Example path in Shader Graph new asset menu
+    "Properties": [
+        { "Name": "_MainTex", "DisplayName": "Main Tile Texture", "Type": "Texture2D", "DefaultValue": "white" },
+        { "Name": "_OverlayTex", "DisplayName": "Overlay Texture (e.g., lock icon, cracks)", "Type": "Texture2D", "DefaultValue": "grey" },
+        { "Name": "_OverlayColor", "DisplayName": "Overlay Color Tint", "Type": "Color", "DefaultValue": { "r": 1, "g": 1, "b": 1, "a": 1 } },
+        { "Name": "_OverlayIntensity", "DisplayName": "Overlay Intensity/Visibility", "Type": "Float", "DefaultValue": 1.0, "Range": [0, 1] },
+        { "Name": "_DesaturationFactor", "DisplayName": "Desaturation Factor (for locked/disabled)", "Type": "Float", "DefaultValue": 0.0, "Range": [0, 1] }
+    ],
+    "Logic": [
+        "1. Sample _MainTex.",
+        "2. Sample _OverlayTex.",
+        "3. Blend _MainTex with (_OverlayTex * _OverlayColor) using _OverlayIntensity. Alpha blending is common.",
+        "4. Apply _DesaturationFactor to the result of step 3.",
+        "5. Output to BaseColor and Alpha.",
+        "6. Ensure it works with UI Element (SpriteRenderer or Image in UI Toolkit with a MaterialPropertyBlock)."
+    ],
+    "Target": "Universal Render Pipeline/2D Sprite Lit (or Unlit if no lighting needed)"
+}

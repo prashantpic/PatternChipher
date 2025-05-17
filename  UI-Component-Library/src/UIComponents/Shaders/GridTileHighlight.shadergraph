@@ -1,0 +1,20 @@
+{
+    "ShaderGraphVersion": 1,
+    "DisplayName": "GridTileHighlight",
+    "Description": "Shader Graph for highlighting tiles visually (e.g., selection, potential match). Supports REQ-UIX-015 and REQ-6-007. This is a conceptual representation; actual Shader Graph is a visual asset.",
+    "Path": "PatternCipher/UI/GridTileHighlight", // Example path in Shader Graph new asset menu
+    "Properties": [
+        { "Name": "_MainTex", "DisplayName": "Main Texture", "Type": "Texture2D", "DefaultValue": "white" },
+        { "Name": "_HighlightColor", "DisplayName": "Highlight Color", "Type": "Color", "DefaultValue": { "r": 1, "g": 1, "b": 0, "a": 1 } },
+        { "Name": "_HighlightIntensity", "DisplayName": "Highlight Intensity", "Type": "Float", "DefaultValue": 0.5, "Range": [0, 1] },
+        { "Name": "_EmissionStrength", "DisplayName": "Emission Strength", "Type": "Float", "DefaultValue": 1.0 }
+    ],
+    "Logic": [
+        "1. Sample _MainTex.",
+        "2. Lerp or Add _MainTex color with _HighlightColor based on _HighlightIntensity.",
+        "3. Output to BaseColor.",
+        "4. Optionally, use _HighlightColor * _EmissionStrength for Emission output for a glow effect.",
+        "5. Ensure it works with UI Element (SpriteRenderer or Image in UI Toolkit with a MaterialPropertyBlock)."
+    ],
+    "Target": "Universal Render Pipeline/2D Sprite Lit (or Unlit if no lighting needed)"
+}
