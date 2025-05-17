@@ -1,0 +1,98 @@
+/* High Contrast Theme - Overrides Default.uss variables */
+/* REQ-UIX-013: Accessibility - Color Vision Deficiency (High Contrast Mode) */
+
+/* Import default variables to override them, or redefine all needed ones.
+   For simplicity, this file redefines key variables. A more robust system
+   might involve loading Default.uss first, then this USS to override.
+   Or, the ThemeManager applies :root variables dynamically.
+*/
+
+:root {
+    /* High Contrast Palette */
+    --color-primary-hc: rgb(0, 0, 0); /* Black */
+    --color-secondary-hc: rgb(255, 255, 0); /* Yellow */
+    --color-accent-hc: rgb(0, 255, 255); /* Cyan */
+    
+    --color-text-light-hc: rgb(255, 255, 255); /* White */
+    --color-text-dark-hc: rgb(0, 0, 0); /* Black */
+    
+    --color-background-light-hc: rgb(255, 255, 255); /* White */
+    --color-background-dark-hc: rgb(0, 0, 0); /* Black */
+
+    /* Overriding default variables with high contrast versions */
+    --color-primary: var(--color-primary-hc);
+    --color-secondary: var(--color-secondary-hc);
+    --color-accent: var(--color-accent-hc);
+
+    --color-text-light: var(--color-text-light-hc);
+    --color-text-dark: var(--color-text-dark-hc);
+    --color-background-light: var(--color-background-light-hc);
+    --color-background-dark: var(--color-background-dark-hc);
+
+    /* HUD Text Color for High Contrast */
+    --hud-text-color: var(--color-text-dark-hc); /* Black text on light HUD background, or white on dark */
+                                                 /* Assuming HUD background will be light in HC */
+
+    /* Button Styles for High Contrast */
+    --button-background-color: var(--color-secondary-hc); /* Yellow background */
+    --button-text-color: var(--color-text-dark-hc); /* Black text */
+    --button-border-color: var(--color-text-dark-hc); /* Black border */
+    --button-hover-background-color: rgb(200, 200, 0); /* Darker Yellow */
+    --button-active-background-color: rgb(150, 150, 0); /* Even Darker Yellow */
+
+    /* Grid Tile Styles for High Contrast */
+    --grid-tile-background-color: var(--color-background-light-hc); /* White tile background */
+    --grid-tile-border-color: var(--color-text-dark-hc); /* Black border */
+    --grid-tile-selected-color: var(--color-accent-hc); /* Cyan border for selected */
+    --grid-tile-highlighted-color: rgba(0, 255, 255, 0.3); /* Cyan highlight, ensure sufficient contrast */
+    --grid-tile-locked-overlay-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
+    --grid-tile-key-color: var(--color-secondary-hc); /* Yellow for key */
+    --grid-tile-obstacle-color: rgb(50,50,50); /* Dark gray for obstacle */
+
+
+    /* Symbol Colors for High Contrast (Symbols must be distinct by shape/texture too) */
+    /* This primarily affects tinting if symbols are single color sprites, or text color for label symbols */
+    --symbol-color-default: var(--color-text-dark-hc); /* Black symbols on light tile */
+    --symbol-label-color: var(--color-text-dark-hc);
+}
+
+/* Apply a general background if needed for the entire UI in HC mode */
+/* This would typically be on the root VisualElement of the UIDocument */
+.high-contrast-theme-root {
+    background-color: var(--color-background-light-hc);
+}
+.high-contrast-theme-root .unity-label { /* Ensure all labels get HC text color */
+    color: var(--color-text-dark-hc);
+}
+
+/* Ensure HUD background contrasts with its text */
+/* In HUDView.uxml, HUDContainer might get a class like 'hud-panel' */
+.hud-panel { /* Assuming HUDView's main container has this class */
+    background-color: var(--color-background-light-hc); /* Light background for HUD */
+    border-width: 2px;
+    border-color: var(--color-text-dark-hc);
+}
+
+.hud-panel .hud-text {
+    color: var(--hud-text-color); /* Black text on light HUD */
+}
+
+.grid-tile {
+    background-color: var(--grid-tile-background-color);
+    border-color: var(--grid-tile-border-color);
+}
+
+.grid-tile--selected {
+    border-color: var(--grid-tile-selected-color);
+    /* Potentially thicker border for more emphasis in HC */
+    border-width: 4px; 
+}
+
+.grid-tile .grid-tile-symbol-icon {
+    -unity-background-image-tint-color: var(--symbol-color-default);
+}
+.grid-tile .grid-tile-symbol-label {
+    color: var(--symbol-label-color);
+}
+
+/* Add more specific overrides as needed to ensure high contrast for all elements */

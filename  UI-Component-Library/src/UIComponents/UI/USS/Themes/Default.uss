@@ -1,0 +1,172 @@
+/* Default Theme Styles - UI-Component-Library */
+
+/* Shared Variables (can be in a separate SharedVariables.uss and imported) */
+:root {
+    --color-primary: rgb(50, 150, 250);
+    --color-secondary: rgb(30, 100, 180);
+    --color-accent: rgb(255, 180, 0);
+    --color-text-light: rgb(240, 240, 240);
+    --color-text-dark: rgb(20, 20, 20);
+    --color-background-light: rgb(220, 220, 220);
+    --color-background-dark: rgb(40, 40, 45);
+    --color-success: rgb(70, 180, 70);
+    --color-warning: rgb(255, 150, 0);
+    --color-error: rgb(220, 50, 50);
+
+    --font-size-small: 12px;
+    --font-size-normal: 16px;
+    --font-size-medium: 20px;
+    --font-size-large: 24px;
+    
+    /* Default HUD Text Color */
+    --hud-text-color: var(--color-text-dark); 
+    /* Default Button Styles */
+    --button-background-color: var(--color-primary);
+    --button-text-color: var(--color-text-light);
+    --button-border-color: var(--color-secondary);
+    --button-hover-background-color: var(--color-secondary);
+    --button-active-background-color: rgb(20, 80, 150);
+
+    /* Default Grid Tile Styles */
+    --grid-tile-background-color: rgb(200, 200, 200);
+    --grid-tile-border-color: rgb(150, 150, 150);
+    --grid-tile-selected-color: var(--color-accent);
+    --grid-tile-highlighted-color: rgba(50, 150, 250, 0.5);
+    --grid-tile-locked-overlay-color: rgba(50, 50, 50, 0.7);
+    --grid-tile-key-color: rgb(255, 215, 0); /* Gold-like */
+    --grid-tile-obstacle-color: rgb(100,100,100);
+
+    /* Default Symbol Colors (can be overridden by SymbolDefinition) */
+    --symbol-color-default: var(--color-text-dark);
+    --symbol-label-color: var(--color-text-dark);
+}
+
+/* General Text Style (can be in Typography.uss) */
+.unity-label {
+    font-size: var(--font-size-normal);
+    color: var(--color-text-dark); /* Default for labels not specifically themed */
+}
+
+/* HUD Specific Styles (can be in HUDView.uss and import this or variables) */
+.hud-text {
+    font-size: var(--font-size-medium);
+    color: var(--hud-text-color);
+    -unity-font-style: bold;
+}
+
+.hud-score-text {}
+.hud-timer-text {}
+.hud-objective-text {}
+.hud-moves-text {}
+
+.hud-button {
+    min-width: 48px; /* REQ-UIX-013.3 Tap Target Size */
+    min-height: 48px; /* REQ-UIX-013.3 Tap Target Size */
+    font-size: var(--font-size-normal);
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
+    border-left-color: var(--button-border-color);
+    border-right-color: var(--button-border-color);
+    border-top-color: var(--button-border-color);
+    border-bottom-color: var(--button-border-color);
+    border-width: 2px;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    transition-property: background-color, scale;
+    transition-duration: 0.1s;
+}
+
+.hud-button:hover {
+    background-color: var(--button-hover-background-color);
+    scale: 1.05 1.05;
+}
+
+.hud-button:active {
+    background-color: var(--button-active-background-color);
+    scale: 0.95 0.95;
+}
+
+/* GridTileView Styles (can be in GridTileView.uss) */
+.grid-tile {
+    min-width: 48px; /* REQ-UIX-013.3 Tap Target Size */
+    min-height: 48px; /* REQ-UIX-013.3 Tap Target Size */
+    background-color: var(--grid-tile-background-color);
+    border-width: 1px;
+    border-color: var(--grid-tile-border-color);
+    margin: 1px; /* Spacing between tiles */
+    align-items: center; /* Center symbol horizontally */
+    justify-content: center; /* Center symbol vertically */
+    overflow: hidden; /* Clip symbol if it's too large */
+}
+
+.grid-tile VisualElement#StateOverlay { /* If using a child VE for overlay */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+}
+
+.grid-tile--selected {
+    border-width: 3px;
+    border-color: var(--grid-tile-selected-color);
+    /* Or use the StateOverlay:
+    VisualElement#StateOverlay { background-color: var(--grid-tile-selected-color); opacity: 0.5; } */
+}
+
+.grid-tile--highlighted {
+    background-color: var(--grid-tile-highlighted-color); /* Blended with tile background */
+}
+
+.grid-tile--locked VisualElement#StateOverlay {
+    background-color: var(--grid-tile-locked-overlay-color);
+    /* Could also display a lock icon here */
+}
+.grid-tile--locked .grid-tile-symbol-icon { /* Example: dim the symbol */
+    opacity: 0.5;
+}
+
+
+.grid-tile--obstacle {
+    background-color: var(--grid-tile-obstacle-color);
+}
+.grid-tile--obstacle .grid-tile-symbol-icon,
+.grid-tile--obstacle .grid-tile-symbol-label {
+    display: none; /* Obstacles usually don't show symbols */
+}
+
+.grid-tile--key {
+    background-color: var(--grid-tile-key-color);
+    /* Could also show a key icon overlay */
+}
+
+
+/* Symbol elements within a grid tile */
+.grid-tile-symbol-icon { /* Assuming Image for icon has this class or name */
+    width: 80%;
+    height: 80%;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--symbol-color-default);
+}
+.grid-tile-symbol-shape { /* Assuming Image for shape has this class or name */
+    position: absolute; /* Overlay or underlay */
+    width: 100%;
+    height: 100%;
+     -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--symbol-color-default); /* Or a different variable */
+    opacity: 0.7; /* Example */
+}
+.grid-tile-symbol-texture { /* Assuming Image for texture overlay */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -unity-background-scale-mode: stretch-to-fill; /* Or tile */
+    opacity: 0.3; /* Example */
+}
+
+
+.grid-tile-symbol-label { /* Assuming Label for accessibility/text symbol */
+    font-size: var(--font-size-small);
+    color: var(--symbol-label-color);
+    -unity-text-align: center;
+}

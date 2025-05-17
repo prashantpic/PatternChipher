@@ -1,0 +1,73 @@
+/* Deuteranopia Theme - Overrides Default.uss variables */
+/* REQ-UIX-013: Accessibility - Color Vision Deficiency (Deuteranopia) */
+/* Focuses on adjusting colors that are problematic for Deuteranopia.
+   Symbols should primarily be distinguishable by shape/texture. */
+
+:root {
+    /* Deuteranopia-friendly Palette (Example - consult color blindness simulators)
+       Avoid relying on red/green distinctions. Use blue/yellow, and varying brightness/saturation.
+       These are illustrative changes to the default theme's color variables.
+    */
+
+    /* Original problematic colors for reference from Default.uss (example):
+       --color-primary: rgb(50, 150, 250); (Blue - usually OK)
+       --color-accent: rgb(255, 180, 0); (Orange/Yellow - usually OK)
+       --color-success: rgb(70, 180, 70); (Green - problematic)
+       --color-error: rgb(220, 50, 50); (Red - problematic)
+    */
+
+    /* Adjusted colors for Deuteranopia */
+    /* Keep blues and yellows, adjust reds and greens */
+    --color-primary-deut: rgb(0, 115, 200);       /* A distinct Blue */
+    --color-accent-deut: rgb(255, 190, 0);        /* A distinct Yellow/Orange */
+    
+    --color-success-deut: rgb(0, 130, 150);       /* A Bluish-Green or Teal, or use distinct pattern/icon */
+    --color-warning-deut: var(--color-accent-deut); /* Yellow/Orange for warning is often fine */
+    --color-error-deut: rgb(180, 70, 0);          /* An Orangey-Red, or use distinct pattern/icon + text */
+
+
+    /* Overriding default variables */
+    --color-primary: var(--color-primary-deut);
+    --color-accent: var(--color-accent-deut);
+    --color-success: var(--color-success-deut);
+    --color-warning: var(--color-warning-deut);
+    --color-error: var(--color-error-deut);
+
+    /* Button colors might need adjustment if they used red/green for semantic meaning */
+    --button-background-color: var(--color-primary-deut);
+    /* If buttons were e.g. green for "confirm" and red for "cancel",
+       they now need to rely on text, icon, and position, not just color.
+       Or use deuteranopia-safe alternatives like blue for confirm, orange for cancel.
+       Example:
+       --button-confirm-background-color: var(--color-primary-deut);
+       --button-cancel-background-color: var(--color-accent-deut);
+    */
+    
+    /* Grid Tile selected/highlighted states if they relied on problematic colors */
+    --grid-tile-selected-color: var(--color-accent-deut); /* Yellow/Orange selection is often clear */
+    --grid-tile-highlighted-color: rgba(0, 115, 200, 0.4); /* Blue highlight */
+    
+    /* Key/Special tile colors if they were red/green */
+    --grid-tile-key-color: var(--color-accent-deut); /* Yellow/Orange for key */
+
+    /* SymbolDefinition instances should define symbol colors. If those colors are references
+       to these theme variables, they will update. If SymbolDefinition has hardcoded colors,
+       the ThemeManager or AccessibilityController would need to override them based on the
+       active ColorPaletteDefinition, which in turn would use these variables.
+       For symbols, SHAPE and TEXTURE are more important than color for CVD.
+       However, if a base tint is applied via USS:
+    */
+    /* --symbol-color-variant-A: rgb(0, 90, 180); Blueish */
+    /* --symbol-color-variant-B: rgb(230, 160, 0); Orangeish */
+    /* --symbol-color-variant-C: rgb(180, 180, 180); Light Gray / White-ish (contrast dependent) */
+}
+
+/* Specific component overrides if necessary */
+/* .hud-button.confirm { background-color: var(--button-confirm-background-color); } */
+/* .hud-button.cancel { background-color: var(--button-cancel-background-color); } */
+
+/* This theme primarily re-maps existing CSS variables.
+   The core requirement is that SymbolDefinitions provide non-color visual distinctions.
+   The ColorPaletteDefinition ScriptableObject associated with this theme would store
+   these --variable values for programmatic access if needed (e.g., for non-USS elements).
+*/

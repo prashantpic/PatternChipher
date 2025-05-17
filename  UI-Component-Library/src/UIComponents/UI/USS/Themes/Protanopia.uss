@@ -1,0 +1,58 @@
+/* Protanopia Theme - Overrides Default.uss variables */
+/* REQ-UIX-013: Accessibility - Color Vision Deficiency (Protanopia) */
+/* Focuses on adjusting colors problematic for Protanopia (similar to Deuteranopia,
+   but reds are perceived as darker and less saturated).
+   Symbols should primarily be distinguishable by shape/texture. */
+
+:root {
+    /* Protanopia-friendly Palette (Example - consult color blindness simulators)
+       Reds are particularly problematic. Greens also affected. Blues/Yellows are generally safer.
+    */
+
+    /* Original problematic colors for reference from Default.uss (example):
+       --color-primary: rgb(50, 150, 250); (Blue - usually OK)
+       --color-accent: rgb(255, 180, 0); (Orange/Yellow - usually OK)
+       --color-success: rgb(70, 180, 70); (Green - problematic)
+       --color-error: rgb(220, 50, 50); (Red - very problematic, appears dark)
+    */
+
+    /* Adjusted colors for Protanopia */
+    --color-primary-prot: rgb(0, 110, 210);       /* A clear, bright Blue */
+    --color-accent-prot: rgb(255, 195, 0);        /* A clear, bright Yellow/Orange */
+    
+    --color-success-prot: rgb(0, 135, 155);       /* A distinct Teal or Bluish-Cyan. Avoid pure green. */
+    --color-warning-prot: var(--color-accent-prot); /* Yellow/Orange for warning */
+    --color-error-prot: rgb(255, 120, 0);         /* Bright Orange instead of Red. Or use icons/text heavily. */
+                                                 /* Pure red becomes very dark and confusable with black/dark browns. */
+
+    /* Overriding default variables */
+    --color-primary: var(--color-primary-prot);
+    --color-accent: var(--color-accent-prot);
+    --color-success: var(--color-success-prot);
+    --color-warning: var(--color-warning-prot);
+    --color-error: var(--color-error-prot);
+
+    /* Button colors might need adjustment */
+    --button-background-color: var(--color-primary-prot);
+    /* If semantic confirm/cancel colors were used:
+       --button-confirm-background-color: var(--color-primary-prot); (Blue)
+       --button-cancel-background-color: var(--color-error-prot); (Bright Orange)
+    */
+    
+    /* Grid Tile selected/highlighted states */
+    --grid-tile-selected-color: var(--color-accent-prot); /* Bright Yellow/Orange selection */
+    --grid-tile-highlighted-color: rgba(0, 110, 210, 0.4); /* Bright Blue highlight */
+    
+    /* Key/Special tile colors */
+    --grid-tile-key-color: var(--color-accent-prot); /* Bright Yellow/Orange for key */
+
+    /* Symbol tints, if used, should choose from the protanopia-safe palette.
+       Primarily rely on shape/texture for symbol differentiation.
+    */
+}
+
+/* This theme primarily re-maps existing CSS variables.
+   The core requirement is that SymbolDefinitions provide non-color visual distinctions.
+   The ColorPaletteDefinition ScriptableObject associated with this theme would store
+   these --variable values.
+*/

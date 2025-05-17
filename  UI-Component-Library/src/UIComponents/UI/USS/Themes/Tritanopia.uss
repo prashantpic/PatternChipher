@@ -1,0 +1,61 @@
+/* Tritanopia Theme - Overrides Default.uss variables */
+/* REQ-UIX-013: Accessibility - Color Vision Deficiency (Tritanopia) */
+/* Focuses on adjusting colors problematic for Tritanopia (difficulty distinguishing blue/yellow).
+   Symbols should primarily be distinguishable by shape/texture. */
+
+:root {
+    /* Tritanopia-friendly Palette (Example - consult color blindness simulators)
+       Blue/Yellow confusion. Green/Blue confusion. Yellow/Violet confusion.
+       Reds and Pinks can be good differentiators. Greens might appear more blueish.
+    */
+
+    /* Original problematic colors for reference from Default.uss (example):
+       --color-primary: rgb(50, 150, 250); (Blue - problematic, confusable with green/purple)
+       --color-accent: rgb(255, 180, 0); (Orange/Yellow - problematic, confusable with pink/light green)
+       --color-success: rgb(70, 180, 70); (Green - can be confused with blue)
+       --color-error: rgb(220, 50, 50); (Red - usually OK)
+    */
+
+    /* Adjusted colors for Tritanopia */
+    --color-primary-trit: rgb(255, 0, 100);       /* Pink or Magenta (distinct from typical blues/yellows) */
+    --color-secondary-trit: rgb(200, 0, 80);      /* Darker Pink/Magenta */
+    --color-accent-trit: rgb(0, 200, 200);        /* Cyan/Teal (distinct from typical yellows/blues) */
+    
+    --color-success-trit: rgb(230, 60, 60);       /* A clear Red for success (if culturally appropriate) or a very distinct Green/Teal. */
+                                                 /* Or, use patterns/icons. */
+    --color-warning-trit: var(--color-primary-trit); /* Pink/Magenta for warning */
+    --color-error-trit: rgb(200, 20, 20);         /* A clear, strong Red */
+
+
+    /* Overriding default variables */
+    --color-primary: var(--color-primary-trit);
+    --color-secondary: var(--color-secondary-trit);
+    --color-accent: var(--color-accent-trit);
+    --color-success: var(--color-success-trit);
+    --color-warning: var(--color-warning-trit);
+    --color-error: var(--color-error-trit);
+
+    /* Button colors might need adjustment */
+    --button-background-color: var(--color-primary-trit); /* Pink/Magenta button */
+    --button-text-color: rgb(255, 255, 255); /* White text on pink */
+    --button-border-color: var(--color-secondary-trit);
+    --button-hover-background-color: var(--color-secondary-trit);
+    --button-active-background-color: rgb(180, 0, 70);
+
+    /* Grid Tile selected/highlighted states */
+    --grid-tile-selected-color: var(--color-accent-trit);      /* Cyan/Teal selection */
+    --grid-tile-highlighted-color: rgba(255, 0, 100, 0.3); /* Pink/Magenta highlight */
+    
+    /* Key/Special tile colors */
+    --grid-tile-key-color: var(--color-accent-trit); /* Cyan/Teal for key */
+
+    /* Symbol tints, if used, should choose from the tritanopia-safe palette.
+       Primarily rely on shape/texture for symbol differentiation.
+    */
+}
+
+/* This theme primarily re-maps existing CSS variables.
+   The core requirement is that SymbolDefinitions provide non-color visual distinctions.
+   The ColorPaletteDefinition ScriptableObject associated with this theme would store
+   these --variable values.
+*/

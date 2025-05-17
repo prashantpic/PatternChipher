@@ -1,0 +1,84 @@
+/* USS Styles specific to the HUDView component and its elements */
+/* This file can override or extend styles from Default.uss or other themes if loaded after them,
+   or it can be self-contained by defining all its styles.
+   For modularity, it's good to define specific styles here.
+*/
+
+/* Using variables defined in Default.uss or theme files */
+/* :root { (not needed here if variables are globally defined) } */
+
+#HUDContainer { /* Assuming the root element in HUDView.uxml has name "HUDContainer" */
+    flex-grow: 1;
+    width: 100%;
+    height: 100%; /* Or specific height like 100px */
+    padding: 10px 15px; /* Standard padding for the HUD */
+    /* background-color: rgba(0,0,0,0.1); /* Optional subtle background for the HUD bar */
+}
+
+/* General text style for HUD elements, inheriting from .hud-text in Default.uss */
+#HUDContainer .unity-label {
+    /* font-size: var(--font-size-medium); /* Or use specific class .hud-text */
+    /* color: var(--hud-text-color); */
+    margin: 2px 5px; /* Spacing around HUD text elements */
+}
+
+#TopHUD, #BottomHUD {
+    /* Styles for top and bottom sections if needed for alignment or spacing */
+    padding-bottom: 5px; /* Example spacing */
+}
+
+/* Individual HUD Element Containers */
+#ScoreContainer, #TimerContainer, #MovesContainer, #ObjectiveContainer {
+    /* Add specific styling if needed, e.g., background, borders */
+    /* Default alignment is handled in UXML, can be tweaked here */
+}
+
+#ScoreLabel {
+    /* font-size: var(--font-size-large); */ /* Example: make score bigger */
+}
+
+#TimerLabel {
+    /* Specific timer styling */
+}
+
+#MovesLabel {
+    /* Specific moves counter styling */
+}
+
+#ObjectiveTextLabel {
+    /* font-size: var(--font-size-normal); */
+    max-width: 200px; /* Prevent objective text from becoming too wide */
+    white-space: normal; /* Allow text wrapping */
+}
+
+#ObjectiveIconImage {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* Buttons within the HUD */
+#ButtonsContainer .unity-button { /* Affects all buttons in ButtonsContainer */
+    /* min-width: var(--tap-target-min-size, 48px); Already in .hud-button */
+    /* min-height: var(--tap-target-min-size, 48px); */
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+/* Specific button styling if needed, e.g. PauseButton */
+#PauseButton {
+    /* background-image: url('project:/Assets/Path/To/PauseIcon.png'); */ /* If using image button */
+    /* -unity-background-scale-mode: scale-to-fit; */
+    /* width: 48px; height: 48px; */ /* If icon only button */
+    /* text: ""; */ /* Remove text if icon only */
+}
+
+#HintButton { /* If a hint button exists */
+    /* Specific styles */
+}
+
+/* Accessibility: Ensure sufficient contrast for all text and interactive elements.
+   This is largely handled by the color variables in theme files.
+   Tap target sizes are also important (min-width, min-height on buttons).
+*/

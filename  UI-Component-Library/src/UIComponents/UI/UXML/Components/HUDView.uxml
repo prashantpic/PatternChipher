@@ -1,0 +1,35 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="HUDContainer" style="flex-grow: 1; width: 100%; height: 100%; justify-content: space-between; align-items: center; padding: 10px;">
+        
+        <!-- Top Section: Score, Timer -->
+        <ui:VisualElement name="TopHUD" style="width: 100%; flex-direction: row; justify-content: space-between; align-items: center;">
+            <ui:VisualElement name="ScoreContainer" style="flex-direction: column; align-items: flex-start;">
+                <ui:Label name="ScoreLabel" text="Score: 0" class="hud-text hud-score-text" />
+            </ui:VisualElement>
+            <ui:VisualElement name="TimerContainer" style="flex-direction: column; align-items: flex-end;">
+                <ui:Label name="TimerLabel" text="Time: 00:00" class="hud-text hud-timer-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Middle Section: Objectives (Optional, can be positioned differently) -->
+        <ui:VisualElement name="ObjectiveContainer" style="margin-top: 10px; margin-bottom: 10px; align-items: center;">
+            <ui:Image name="ObjectiveIconImage" style="width: 32px; height: 32px; margin-right: 5px; display: none;" />
+            <ui:Label name="ObjectiveTextLabel" text="Objective: Complete the pattern" class="hud-text hud-objective-text" />
+        </ui:VisualElement>
+
+        <!-- Bottom Section: Moves, Buttons (e.g., Pause) -->
+        <ui:VisualElement name="BottomHUD" style="width: 100%; flex-direction: row; justify-content: space-between; align-items: center;">
+            <ui:VisualElement name="MovesContainer" style="flex-direction: column; align-items: flex-start;">
+                <ui:Label name="MovesLabel" text="Moves: 0/10" class="hud-text hud-moves-text" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="ButtonsContainer" style="flex-direction: row; align-items: center;">
+                <!-- Example Button: Pause Button -->
+                <ui:Button name="PauseButton" text="Pause" class="hud-button" style="min-width: 80px; min-height: 40px; margin-left:10px;" />
+                <!-- Add other buttons here e.g. HintButton -->
+                <!-- <ui:Button name="HintButton" text="Hint" class="hud-button" style="min-width: 80px; min-height: 40px; margin-left:10px;" /> -->
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
