@@ -1,0 +1,9 @@
+{
+  "firebaseProjectId": "patterncipher-dev",
+  "unityDevBuild": true,
+  "unityConfigSymbol": "DEVELOPMENT_BUILD;ENABLE_CHEAT_MENU",
+  "analyticsTrackingId": "UA-DEV-12345678-1",
+  "remoteConfigCacheExpirationSeconds": 3600,
+  "apiEndpoint": "http://localhost:5001/patterncipher-dev/us-central1/api",
+  "logLevel": "Debug"
+}

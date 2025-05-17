@@ -1,0 +1,58 @@
+name: Reusable Deploy Firebase
+on:
+  workflow_call:
+    inputs:
+      firebaseProjectAlias:
+        description: 'Firebase project alias (e.g., dev, staging, production) defined in .firebaserc'
+        required: true
+        type: string
+      componentsToDeploy:
+        description: 'Comma-separated list of Firebase components to deploy (e.g., functions,firestore:rules,storage:rules,hosting)'
+        required: true
+        type: string
+      functionsPath:
+        description: 'Path to the Firebase functions directory (if deploying functions and not at default location)'
+        required: false
+        type: string
+        default: '../REPO-FIREBASE-BACKEND/backend/firebase-functions' # Default relative to iac/firebase
+    secrets:
+      FIREBASE_SERVICE_ACCOUNT_SECRET:
+        description: 'Base64 encoded Firebase service account JSON key'
+        required: true
+
+jobs:
+  deploy_firebase:
+    name: Deploy to Firebase ${{ inputs.firebaseProjectAlias }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.firebaseProjectAlias }} # Optional: map alias to GitHub environment for protection rules
+    steps:
+      - name: Checkout CI/CD Repository (for scripts and iac)
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD
+
+      # Note: The calling workflow is responsible for checking out REPO-FIREBASE-BACKEND
+      # if functions are being deployed, to the location expected by iac/firebase/firebase.json
+      # e.g., path: REPO-FIREBASE-BACKEND
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Specify LTS version matching Firebase Functions runtime
+
+      - name: Setup Firebase Tools
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SECRET }}
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/utils/setup-firebase-tools.sh
+          ./REPO-CI-CD/scripts/utils/setup-firebase-tools.sh
+
+      - name: Deploy Firebase Components
+        env:
+          FIREBASE_PROJECT_ALIAS: ${{ inputs.firebaseProjectAlias }}
+          DEPLOY_TARGETS: ${{ inputs.componentsToDeploy }}
+          # FIREBASE_IAC_PATH is relative to script execution, default in script or can be passed
+          # FUNCTIONS_PATH: ${{ inputs.functionsPath }} # Can be used by deploy script if needed
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/deploy/deploy-firebase-components.sh
+          ./REPO-CI-CD/scripts/deploy/deploy-firebase-components.sh "$FIREBASE_PROJECT_ALIAS" "$DEPLOY_TARGETS" ./REPO-CI-CD/iac/firebase

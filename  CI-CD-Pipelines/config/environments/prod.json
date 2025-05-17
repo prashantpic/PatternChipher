@@ -1,0 +1,9 @@
+{
+  "firebaseProjectId": "patterncipher-prod",
+  "unityReleaseBuild": true,
+  "unityConfigSymbol": "PRODUCTION_BUILD",
+  "analyticsTrackingId": "UA-PROD-12345678-1",
+  "remoteConfigCacheExpirationSeconds": 300,
+  "apiEndpoint": "https://api.patterncipher.com",
+  "logLevel": "Warning"
+}

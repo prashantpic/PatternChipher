@@ -1,0 +1,82 @@
+# yamllint configuration
+
+# Use default configuration as a base (includes many common checks)
+extends: default
+
+# Rules to customize or add
+rules:
+  # Indentation: Use 2 spaces, ensure consistency for sequences
+  indentation:
+    spaces: 2
+    indent-sequences: consistent # or 'whatever' if preferred
+    check-multi-line-strings: false
+
+  # Line length: Max 120 characters, treat as a warning
+  line-length:
+    max: 120
+    level: warning
+
+  # Disallow duplicate keys in mappings
+  key-duplicates: {}
+
+  # Check for truthy values (e.g., 'yes', 'NO', 'True' should be booleans true/false)
+  truthy:
+    level: warning # Can be 'error' for stricter enforcement
+    allowed-values: ['true', 'false'] # Add 'on', 'off' if used
+
+  # Braces: Forbid spaces inside braces (e.g., {key: value} not { key: value })
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  # Brackets: Forbid spaces inside brackets
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  # Colons: Require a space after colon, no space before
+  colons:
+    max-spaces-before: 0
+    min-spaces-after: 1
+
+  # Commas: Require a space after comma, no space before
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+
+  # Comments: Require a space after '#'
+  comments:
+    require-starting-space: true
+
+  # Document start: check for '---'
+  document-start:
+    present: false # GitHub Actions workflows don't typically use '---'
+
+  # Empty lines: Max 2 consecutive empty lines
+  empty-lines:
+    max: 2
+    max-start: 0 # No empty lines at the start of the file
+    max-end: 1   # Allow one empty line at the end
+
+  # Hyphens: Consistent spacing for hyphens in sequences
+  hyphens:
+    max-spaces-after: 1
+
+  # New line at end of file
+  new-line-at-end-of-file: enable
+
+  # New lines: Use Unix-style newlines (\n)
+  new-lines:
+    type: unix
+
+# Files to ignore (supports glob patterns)
+# ignore: |
+#   relative/path/to/ignored/file.yaml
+#   relative/path/to/ignored/folder/**
+
+# YAML version (1.1 or 1.2)
+# yaml-version: 1.2

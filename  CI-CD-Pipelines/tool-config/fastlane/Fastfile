@@ -1,0 +1,133 @@
+# Fastfile
+
+# Uncomment the line if you want fastlane to detect the platform automatically
+# platform :ios
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and deploy to TestFlight for internal testing"
+  lane :beta do |options|
+    # Ensure build_path is provided
+    # Example: fastlane ios beta build_path:"path/to/your.ipa"
+
+    build_path = options[:build_path]
+    unless build_path && File.exist?(build_path)
+      UI.user_error!("You must pass a valid build_path for the .ipa file to the 'beta' lane.")
+    end
+
+    # Ensure necessary environment variables are set for Match and Pilot
+    # FASTLANE_MATCH_GIT_URL_SECRET, FASTLANE_MATCH_PASSWORD_SECRET,
+    # APPLE_APP_SPECIFIC_PASSWORD_SECRET, FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD, etc.
+
+    # Get provisioning profiles
+    match(type: "appstore", readonly: is_ci) # 'appstore' type is used for TestFlight too
+
+    # Increment build number (optional, can be handled by Unity build or another tool)
+    # build_number = increment_build_number(
+    #   xcodeproj: "PatternCipher.xcodeproj" # Replace with your project path
+    # )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      ipa: build_path,
+      skip_waiting_for_build_processing: true, # Recommended for CI
+      # app_identifier: CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier), # From Appfile
+      # username: CredentialsManager::AppfileConfig.try_fetch_value(:apple_id) # From Appfile
+      changelog: "Automated CI build: #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
+    UI.success "Successfully uploaded iOS beta build to TestFlight!"
+  end
+
+  desc "Build and deploy to App Store for release"
+  lane :release do |options|
+    build_path = options[:build_path]
+    unless build_path && File.exist?(build_path)
+      UI.user_error!("You must pass a valid build_path for the .ipa file to the 'release' lane.")
+    end
+
+    match(type: "appstore", readonly: is_ci)
+
+    # Optional: Add steps like version bumping, metadata update, screenshots
+    # deliver(
+    #   ipa: build_path,
+    #   force: true, # Skip submission for review, just upload
+    #   submit_for_review: false, # Set to true for automatic submission
+    #   automatic_release: false # Set to true for automatic release after approval
+    # )
+
+    # For App Store Connect upload directly (if not using deliver for full metadata management)
+     upload_to_app_store(
+       ipa: build_path,
+       # app_identifier: app_identifier, # From Appfile
+       # apple_id: apple_id, # From Appfile
+       skip_screenshots: true,
+       skip_metadata: true, # Assuming metadata managed elsewhere or manually
+       submit_for_review: false # Set to true to auto-submit
+     )
+
+    UI.success "Successfully uploaded iOS release build to App Store Connect!"
+  end
+end
+
+platform :android do
+  desc "Build and deploy to Google Play Beta track"
+  lane :beta do |options|
+    # Ensure build_path (for .aab or .apk) is provided
+    build_path = options[:build_path]
+    unless build_path && File.exist?(build_path)
+      UI.user_error!("You must pass a valid build_path for the .aab/.apk file to the 'beta' lane.")
+    end
+
+    # Ensure GOOGLE_PLAY_JSON_KEY_SECRET is set as ENV['SUPPLY_JSON_KEY'] or path
+    # json_key_path = ENV['GOOGLE_PLAY_JSON_KEY_PATH'] # e.g. from a decoded secret file
+
+    # Upload to Google Play Console (Beta track)
+    upload_to_play_store(
+      track: 'beta',
+      # package_name: CredentialsManager::AppfileConfig.try_fetch_value(:package_name), # From Appfile
+      aab: build_path, # Or use `apk: build_path` if using APK
+      # json_key: json_key_path, # Path to your Google Play service account JSON key
+      skip_upload_apk: build_path.end_with?(".aab"), # if AAB, no separate APK upload
+      skip_upload_aab: build_path.end_with?(".apk"), # if APK, no separate AAB upload
+      skip_upload_metadata: true, # Assume metadata managed elsewhere
+      skip_upload_changelogs: false,
+      whatsnew: "Automated CI build: #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
+    UI.success "Successfully uploaded Android beta build to Google Play!"
+  end
+
+  desc "Build and deploy to Google Play Production track"
+  lane :release do |options|
+    build_path = options[:build_path]
+    unless build_path && File.exist?(build_path)
+      UI.user_error!("You must pass a valid build_path for the .aab/.apk file to the 'release' lane.")
+    end
+
+    # Upload to Google Play Console (Production track)
+    upload_to_play_store(
+      track: 'production',
+      # package_name: package_name, # From Appfile
+      aab: build_path, # Or use `apk: build_path`
+      # json_key: json_key_path,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: false,
+      whatsnew: "Release version: #{options[:version_name] || 'N/A'}" # Example: pass version_name
+      # rollout: '0.1' # Optional: staged rollout percentage (e.g., 10%)
+    )
+
+    UI.success "Successfully uploaded Android release build to Google Play!"
+  end
+end
+
+# Error handling for all lanes
+error do |lane, exception|
+  UI.error "Error in Fastlane lane '#{lane}': #{exception.message}"
+  # Example: Send notification
+  # slack(
+  #   message: "Fastlane build failed on lane '#{lane}': #{exception.message}",
+  #   success: false
+  # )
+end

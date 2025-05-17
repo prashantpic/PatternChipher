@@ -1,0 +1,10 @@
+{
+  "firebaseProjectId": "patterncipher-staging",
+  "unityDevBuild": false,
+  "unityConfigSymbol": "STAGING_BUILD",
+  "enableFeatureX": true,
+  "apiEndpoint": "https://staging.api.patterncipher.com",
+  "analyticsTrackingId": "UA-STAGING-12345678-1",
+  "remoteConfigCacheExpirationSeconds": 600,
+  "logLevel": "Info"
+}

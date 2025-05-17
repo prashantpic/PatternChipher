@@ -1,0 +1,62 @@
+# Snyk policy file (.snyk)
+# For more information: https://docs.snyk.io/products/snyk-code/custom-rules/snyk-yaml-file
+# and https://docs.snyk.io/snyk-cli/commands/test#options-for-all-test-environments
+
+version: v1.24.0 # Use a current Snyk policy file version
+
+# Fail builds if vulnerabilities of specified severity or higher are found.
+# 'low', 'medium', 'high', 'critical'
+severityThreshold: high
+
+# Ignore specific vulnerabilities or paths
+ignore:
+  # Example: Ignore a specific CVE in a particular package (with reason and expiry)
+  # "CVE-2021-12345":
+  #   - "npm:some-package@<1.2.3":
+  #       reason: "This vulnerability is in a dev dependency not affecting production."
+  #       expires: "2024-12-31"
+
+  # Example: Ignore all vulnerabilities in a specific path
+  # "**/test-fixtures/**":
+  #   reason: "Code in test fixtures, not part of production build."
+
+  # Example: Ignore a specific Snyk ID (SNYK-JS-...)
+  # "SNYK-JS-SOMEPACKAGE-1234567":
+  #   - "*": # Applies to all paths where this vulnerability is found
+  #       reason: "Reviewed and accepted risk."
+  #       expires: "2025-03-01"
+
+# Patch specific vulnerabilities (if using Snyk's patching capabilities)
+# patch:
+#   "npm:some-vulnerable-package@1.0.0":
+#     - "SNYK-PATCH-JS-SOMEPACKAGE-XYZ":
+#         reason: "Applying Snyk-provided patch for this vulnerability."
+
+# Snyk Code specific settings (if Snyk Code is used)
+# code:
+#   # Exclude paths from Snyk Code analysis
+#   exclude:
+#     - "docs/**"
+#     - "examples/**"
+#   # Define custom rules or rule sets (requires Snyk Code custom rules feature)
+#   # rules:
+#   #   "my-custom-ruleset.yml"
+
+# Snyk Open Source specific settings
+# openSource:
+#   # Specify package manager manifest files if not automatically detected
+#   # manifestFiles:
+#   #   - "package.json"
+#   #   - "Packages/packages-lock.json" # For Unity
+
+#   # Exclude development dependencies from being tested (default is false)
+#   excludeDevDeps: false
+
+# Snyk Infrastructure as Code (IaC) specific settings
+# iac:
+#   # Exclude paths from Snyk IaC analysis
+#   # exclude:
+#   #   - "terraform/modules/**"
+
+# Set a global expiry for all ignores in this file (overrides individual expiries if earlier)
+# globalExpires: "2025-01-01"

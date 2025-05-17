@@ -1,0 +1,30 @@
+# Appfile
+# This file defines structured data that can be used across all Fastlane tools.
+
+# iOS App Identifier
+app_identifier "com.patterncipher.game"
+
+# Your Apple ID
+apple_id "developer@example.com" # Your Apple Developer account email
+
+# Apple Developer Portal Team ID (used by `match` and other tools)
+team_id "YOUR_APPLE_TEAM_ID" # Example: A1B2C3D4E5
+
+# App Store Connect Team ID (optional, if different from Developer Portal Team ID)
+# itc_team_id "YOUR_ITC_TEAM_ID"
+
+# Android Package Name
+package_name "com.patterncipher.game"
+
+# You can define different values for different platforms:
+#
+# for_platform :ios do
+#   app_identifier "com.patterncipher.game.ios"
+# end
+#
+# for_platform :android do
+#   package_name "com.patterncipher.game.android"
+# end
+#
+# You can also use environment variables to set these values:
+# app_identifier ENV["APP_IDENTIFIER"]

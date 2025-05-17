@@ -1,0 +1,143 @@
+name: Reusable Build Unity Client
+on:
+  workflow_call:
+    inputs:
+      targetPlatform:
+        description: 'Target platform for the Unity build (e.g., Android, iOS, StandaloneWindows64)'
+        required: true
+        type: string
+      buildConfiguration:
+        description: 'Build configuration (e.g., Debug, Release)'
+        required: true
+        type: string
+      unityVersion:
+        description: 'Unity version to use for the build (e.g., 2022.3.10f1)'
+        required: true
+        type: string
+      projectPath:
+        description: 'Path to the Unity project (e.g., ./REPO-UNITY-CLIENT)'
+        required: true
+        type: string
+      buildVersion:
+        description: 'Build version string (e.g., 1.0.0)'
+        required: false
+        type: string
+        default: '1.0.0'
+      buildNumber:
+        description: 'Build number (e.g., 123)'
+        required: false
+        type: string
+        default: '1'
+      androidKeystoreBase64:
+        description: 'Base64 encoded Android keystore file'
+        required: false
+        type: string
+      androidKeystorePass:
+        description: 'Password for the Android keystore'
+        required: false
+        type: string
+      androidKeyaliasName:
+        description: 'Alias name for the Android key'
+        required: false
+        type: string
+      androidKeyaliasPass:
+        description: 'Password for the Android key alias'
+        required: false
+        type: string
+    secrets:
+      UNITY_LICENSE_CONTENT_SECRET:
+        description: 'Base64 encoded Unity license file (.ulf)'
+        required: true
+    outputs:
+      buildPath:
+        description: "Path to the built Unity player artifact"
+        value: ${{ jobs.build_unity.outputs.buildPath }}
+      assetBundlesPath:
+        description: "Path to the built Unity Addressable Asset Bundles"
+        value: ${{ jobs.build_unity.outputs.assetBundlesPath }}
+
+jobs:
+  build_unity:
+    name: Build Unity Client for ${{ inputs.targetPlatform }}
+    runs-on: ubuntu-latest # Consider using a dedicated Unity runner if available/needed
+    outputs:
+      buildPath: ${{ steps.upload_player_artifact.outputs.artifact_path }}
+      assetBundlesPath: ${{ steps.upload_bundles_artifact.outputs.artifact_path }}
+    steps:
+      - name: Checkout ${{ inputs.projectPath }}
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.projectPath }} # Checkout the Unity project code
+
+      - name: Checkout CI/CD Scripts Repository
+        uses: actions/checkout@v4
+        with:
+          path: REPO-CI-CD # Checkout this repo to access scripts
+
+      - name: Set up Unity Editor
+        uses: game-ci/unity-builder/action/setup@v4 # This action sets up Unity but we'll use scripts for build
+        with:
+          unityVersion: ${{ inputs.unityVersion }}
+
+      - name: Activate Unity License
+        env:
+          UNITY_LICENSE_CONTENT: ${{ secrets.UNITY_LICENSE_CONTENT_SECRET }}
+          UNITY_EXECUTABLE_PATH: ${{ env.UNITY_EXECUTABLE_PATH }} # Provided by game-ci/unity-builder/action/setup
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/utils/setup-unity-license.sh
+          ./REPO-CI-CD/scripts/utils/setup-unity-license.sh activate
+
+      - name: Build Unity Client
+        id: build_client
+        env:
+          UNITY_PROJECT_PATH: ${{ inputs.projectPath }}
+          UNITY_BUILD_TARGET: ${{ inputs.targetPlatform }}
+          UNITY_BUILD_CONFIGURATION: ${{ inputs.buildConfiguration }}
+          UNITY_BUILD_VERSION: ${{ inputs.buildVersion }}
+          UNITY_BUILD_NUMBER: ${{ inputs.buildNumber }}
+          UNITY_OUTPUT_PATH: ${{ github.workspace }}/Builds/${{ inputs.targetPlatform }}
+          UNITY_EXECUTABLE_PATH: ${{ env.UNITY_EXECUTABLE_PATH }}
+          ANDROID_KEYSTORE_BASE64: ${{ inputs.androidKeystoreBase64 }}
+          ANDROID_KEYSTORE_PASS: ${{ inputs.androidKeystorePass }}
+          ANDROID_KEYALIAS_NAME: ${{ inputs.androidKeyaliasName }}
+          ANDROID_KEYALIAS_PASS: ${{ inputs.androidKeyaliasPass }}
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/build/build-unity-client.sh
+          ./REPO-CI-CD/scripts/build/build-unity-client.sh
+        continue-on-error: false
+
+      - name: Build Unity Addressable Asset Bundles
+        id: build_bundles
+        env:
+          UNITY_PROJECT_PATH: ${{ inputs.projectPath }}
+          UNITY_EXECUTABLE_PATH: ${{ env.UNITY_EXECUTABLE_PATH }}
+          ADDRESSABLES_OUTPUT_PATH: ${{ github.workspace }}/AssetBundles/${{ inputs.targetPlatform }}
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/build/bundle-unity-assets.sh
+          ./REPO-CI-CD/scripts/build/bundle-unity-assets.sh
+        continue-on-error: false
+
+      - name: Return Unity License
+        if: always()
+        env:
+          UNITY_LICENSE_CONTENT: ${{ secrets.UNITY_LICENSE_CONTENT_SECRET }} # May not be needed for return
+          UNITY_EXECUTABLE_PATH: ${{ env.UNITY_EXECUTABLE_PATH }}
+        run: |
+          chmod +x ./REPO-CI-CD/scripts/utils/setup-unity-license.sh
+          ./REPO-CI-CD/scripts/utils/setup-unity-license.sh return
+
+      - name: Upload Player Build Artifact
+        id: upload_player_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UnityPlayer-${{ inputs.targetPlatform }}-${{ inputs.buildConfiguration }}
+          path: ${{ github.workspace }}/Builds/${{ inputs.targetPlatform }}/*
+          if-no-files-found: error
+      
+      - name: Upload Asset Bundles Artifact
+        id: upload_bundles_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AssetBundles-${{ inputs.targetPlatform }}
+          path: ${{ github.workspace }}/AssetBundles/${{ inputs.targetPlatform }}/*
+          if-no-files-found: error # Or 'warn' if bundles are optional
