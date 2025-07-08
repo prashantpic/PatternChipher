@@ -1,0 +1,48 @@
+sequenceDiagram
+    actor "Game Admin" as actorgameadmin
+    participant "RemoteConfigEndpoints" as REPOPATT009
+    participant "GameClientApplication" as REPOPATT001
+    participant "BackendServiceFacade" as REPOPATT005
+    participant "GameplayLogicEndpoints" as REPOPATT002
+
+    actorgameadmin-REPOPATT009: 1. Updates and publishes parameters in Firebase Console
+    activate REPOPATT009
+    REPOPATT009--actorgameadmin: Confirmation
+    deactivate REPOPATT009
+
+    note over REPOPATT001: At a later time, a player launches the game.
+
+    REPOPATT001-REPOPATT005: 3. FetchAndApplyConfig()
+    activate REPOPATT005
+
+    alt 3.1.1. [Fetch successful]
+        REPOPATT005-REPOPATT009: 3.1.1.1. [Firebase SDK] FetchAsync()
+        activate REPOPATT009
+        REPOPATT009--REPOPATT005: Fetched config data
+        deactivate REPOPATT009
+        
+        REPOPATT005-REPOPATT009: 3.1.1.2. [Firebase SDK] ActivateAsync()
+        activate REPOPATT009
+        REPOPATT009--REPOPATT005: true (activated)
+        deactivate REPOPATT009
+    else 3.1.2. [Fetch fails or timeout]
+        REPOPATT005-REPOPATT009: 3.1.2.1. [Firebase SDK] FetchAsync()
+        activate REPOPATT009
+        REPOPATT009--REPOPATT005: Error or Timeout
+        deactivate REPOPATT009
+        note right of REPOPATT005: Facade handles the logic to fallback to cached or bundled default values on failure, ensuring the game can start offline. This fulfills NFR-M-002.
+    end
+
+    REPOPATT005-REPOPATT005: 3.2. Parses fetched data or loads from local defaults if fetch failed
+
+    REPOPATT005--REPOPATT001: GameConfiguration
+    deactivate REPOPATT005
+
+    REPOPATT001-REPOPATT002: 4. UpdateConfiguration(config)
+    activate REPOPATT002
+    note right of REPOPATT002: The Gameplay Logic layer is now configured with the latest balancing parameters without needing a code change.
+
+    loop 5. Subsequent calls use new/default configuration for puzzle generation and scoring
+    end
+
+    deactivate REPOPATT002

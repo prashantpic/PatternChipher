@@ -1,0 +1,26 @@
+erDiagram
+    Player {
+        Guid playerId PK
+    }
+    Level {
+        Guid levelId PK
+    }
+    AnalyticsEvent {
+        Guid analyticsEventId PK
+        Guid playerId FK
+        Guid sessionId
+        VARCHAR eventName
+        DateTime eventTimestamp
+        JSON eventPayload
+        Guid levelId FK
+        INT moves
+        INT timeInSeconds
+        VARCHAR appVersion
+        VARCHAR platform
+        VARCHAR deviceModel
+        VARCHAR osVersion
+        VARCHAR countryCode
+    }
+
+    Player ||--o{ AnalyticsEvent : generates
+    Level ||--o{ AnalyticsEvent : pertains_to

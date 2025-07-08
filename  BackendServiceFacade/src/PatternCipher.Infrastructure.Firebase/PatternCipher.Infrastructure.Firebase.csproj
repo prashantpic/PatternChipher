@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>PatternCipher.Infrastructure.Firebase</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 
+      These references point to the Firebase SDK DLLs managed by the Unity Package Manager.
+      The actual path might vary depending on the project structure.
+      This approach is used instead of NuGet packages for Unity compatibility.
+    -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>path/to/unity/UnityEngine.CoreModule.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.App">
+      <HintPath>path/to/firebase/Firebase.App.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.Auth">
+      <HintPath>path/to/firebase/Firebase.Auth.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.Firestore">
+      <HintPath>path/to/firebase/Firebase.Firestore.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.RemoteConfig">
+      <HintPath>path/to/firebase/Firebase.RemoteConfig.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.Analytics">
+      <HintPath>path/to/firebase/Firebase.Analytics.dll</HintPath> <!-- Placeholder path -->
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Firebase.Task">
+        <HintPath>path/to/firebase/Firebase.Task.dll</HintPath> <!-- Placeholder path -->
+        <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>path/to/Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath> <!-- Placeholder path if using MS DI -->
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Project reference to the Application/Domain layer where interfaces and domain models are defined.
+      Adjust the path as necessary.
+    -->
+    <ProjectReference Include="..\PatternCipher.Application\PatternCipher.Application.csproj" />
+  </ItemGroup>
+
+</Project>

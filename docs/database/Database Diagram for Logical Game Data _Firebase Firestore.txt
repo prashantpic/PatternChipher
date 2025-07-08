@@ -1,0 +1,136 @@
+erDiagram
+    Player {
+        Guid playerId PK "Unique identifier for the player"
+        VARCHAR firebaseUid "Firebase Authentication User ID"
+        VARCHAR ageGateStatus "Status from age gate"
+        INT totalStars "Aggregate total stars"
+        INT highestLevelPackUnlocked "Highest pack unlocked"
+        INT highestLevelUnlockedInPack "Highest level in pack"
+        BOOLEAN isDeleted "Soft delete flag"
+        DateTime lastLoginAt "Last login timestamp"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    GameSettings {
+        Guid gameSettingsId PK "Unique identifier for settings"
+        Guid playerId FK "Foreign key to Player"
+        DECIMAL bgmVolume "Background music volume"
+        DECIMAL sfxVolume "Sound effects volume"
+        VARCHAR colorblindMode "Colorblind mode setting"
+        BOOLEAN isReducedMotionEnabled "Reduce motion flag"
+        BOOLEAN isHapticsEnabled "Haptics flag"
+        VARCHAR languageCode "Language setting"
+        BOOLEAN isCloudSaveEnabled "Cloud save flag"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    UserConsent {
+        Guid userConsentId PK "Unique identifier for consent"
+        Guid playerId FK "Foreign key to Player"
+        VARCHAR consentType "Type of consent"
+        BOOLEAN isGiven "Consent status"
+        VARCHAR version "Policy version"
+        DateTime grantedAt "Consent granted timestamp"
+        DateTime createdAt "Creation timestamp"
+    }
+
+    LevelDefinition {
+        Guid levelDefinitionId PK "Unique identifier for level definition"
+        INT levelPack "Level pack number"
+        INT levelNumber "Level number within pack"
+        VARCHAR puzzleType "Type of puzzle"
+        BIGINT generationSeed "Generation seed"
+        JSON gridConfiguration "Initial grid state"
+        JSON goalConfiguration "Target pattern/rules"
+        INT parMoves "Target move count"
+        JSON solutionPath "Optimal solution path"
+        DECIMAL difficultyScore "Calculated difficulty"
+        DateTime createdAt "Creation timestamp"
+    }
+
+    PlayerLevelProgress {
+        Guid playerLevelProgressId PK "Unique identifier for progress"
+        Guid playerId FK "Foreign key to Player"
+        Guid levelDefinitionId FK "Foreign key to LevelDefinition"
+        BOOLEAN isUnlocked "Level unlocked flag"
+        BOOLEAN isCompleted "Level completed flag"
+        INT bestScore "Best score achieved"
+        INT bestMoves "Fewest moves taken"
+        INT bestTimeSeconds "Fastest time"
+        INT starsAwarded "Stars earned"
+        DateTime firstCompletedAt "First completion timestamp"
+        DateTime lastPlayedAt "Last played timestamp"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    Leaderboard {
+        Guid leaderboardId PK "Unique identifier for leaderboard definition"
+        VARCHAR name "Unique name for leaderboard"
+        VARCHAR scoreType "Metric being ranked"
+        VARCHAR sortOrder "Sort order"
+        VARCHAR resetFrequency "Reset frequency"
+        BOOLEAN isActive "Leaderboard active flag"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    LeaderboardEntry {
+        Guid leaderboardEntryId PK "Unique identifier for entry"
+        Guid leaderboardId FK "Foreign key to Leaderboard"
+        Guid playerId FK "Foreign key to Player"
+        VARCHAR firebaseUid "Firebase UID of player"
+        VARCHAR playerName "Player name"
+        BIGINT scoreValue "Score value"
+        Guid levelDefinitionId FK "Optional level link"
+        JSON componentsOfScore "Score components"
+        INT rank "Calculated rank"
+        BOOLEAN isDeleted "Soft delete flag"
+        DateTime submittedAt "Submission timestamp"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    Achievement {
+        Guid achievementId PK "Unique identifier for achievement definition"
+        VARCHAR name "Unique name for achievement"
+        TEXT description "Achievement description"
+        VARCHAR iconUrl "Icon asset path"
+        JSON triggerCondition "Unlock rules"
+        BOOLEAN isHidden "Hidden until unlocked"
+        BOOLEAN isActive "Achievement active flag"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    PlayerAchievement {
+        Guid playerAchievementId PK "Unique identifier for player achievement"
+        Guid playerId FK "Foreign key to Player"
+        Guid achievementId FK "Foreign key to Achievement"
+        INT progress "Current progress"
+        BOOLEAN isUnlocked "Achievement unlocked flag"
+        DateTime unlockedAt "Unlock timestamp"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    RemoteConfig {
+        Guid remoteConfigId PK "Unique identifier for config"
+        VARCHAR configKey "Unique key for parameter"
+        JSON configValue "Parameter value as JSON"
+        TEXT description "Config description"
+        BOOLEAN isActive "Config active flag"
+        DateTime createdAt "Creation timestamp"
+        DateTime updatedAt "Last update timestamp"
+    }
+
+    Player ||--|| GameSettings : "has"
+    Player ||--o{ UserConsent : "has"
+    Player ||--o{ PlayerLevelProgress : "tracks progress for"
+    LevelDefinition ||--o{ PlayerLevelProgress : "progress tracked by"
+    Player ||--o{ LeaderboardEntry : "has"
+    Leaderboard ||--o{ LeaderboardEntry : "includes"
+    Player ||--o{ PlayerAchievement : "tracks"
+    Achievement ||--o{ PlayerAchievement : "is tracked by"

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://patterncipher.com/analytics/events/client_error.schema.json",
+  "title": "Client Error Event",
+  "description": "Defines the data contract for a client-side error to enable stability monitoring. It uses a hash of the stack trace to group errors while protecting user privacy. FR-AT-001, FR-AT-003.",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "description": "The constant name of the event.",
+      "type": "string",
+      "const": "client_error"
+    },
+    "event_timestamp": {
+      "description": "The ISO 8601 timestamp when the event occurred.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "player_id": {
+      "description": "The non-personally-identifiable GUID for the player.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "session_id": {
+      "description": "A unique identifier for the game session.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "error_type": {
+      "description": "The type or class of the error (e.g., 'NullReferenceException', 'PCG_Unsolvable').",
+      "type": "string"
+    },
+    "error_context": {
+      "description": "A brief, non-PII description of the application state or context when the error occurred (e.g., 'DuringLevelLoad', 'OnTileSwap').",
+      "type": "string"
+    },
+    "stack_trace_hash": {
+      "description": "An SHA256 hash of the full, sanitized stack trace. Used for grouping identical errors.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    }
+  },
+  "required": [
+    "event_name",
+    "event_timestamp",
+    "player_id",
+    "session_id",
+    "error_type",
+    "error_context",
+    "stack_trace_hash"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://patterncipher.com/analytics/events/level_start.schema.json",
+  "title": "Level Start Event",
+  "description": "Defines the data contract for an event logged when a player starts a new level attempt. FR-AT-001, FR-B-006.",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "description": "The constant name of the event.",
+      "type": "string",
+      "const": "level_start"
+    },
+    "event_timestamp": {
+      "description": "The ISO 8601 timestamp when the event occurred.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "player_id": {
+      "description": "The non-personally-identifiable GUID for the player.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "session_id": {
+      "description": "A unique identifier for the game session.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "level_id": {
+      "description": "A unique identifier for the level being played (e.g., a GUID or seed).",
+      "type": "string"
+    },
+    "level_type": {
+      "description": "The type of puzzle (e.g., 'DirectMatch', 'RuleBased').",
+      "type": "string",
+      "enum": [
+        "DirectMatch",
+        "RuleBased"
+      ]
+    },
+    "difficulty": {
+      "description": "An integer representing the difficulty tier or value of the level.",
+      "type": "integer"
+    },
+    "grid_size": {
+      "description": "The dimensions of the grid for this level (e.g., '3x3', '8x8').",
+      "type": "string",
+      "pattern": "^\\d+x\\d+$"
+    }
+  },
+  "required": [
+    "event_name",
+    "event_timestamp",
+    "player_id",
+    "session_id",
+    "level_id",
+    "level_type",
+    "difficulty",
+    "grid_size"
+  ],
+  "additionalProperties": false
+}

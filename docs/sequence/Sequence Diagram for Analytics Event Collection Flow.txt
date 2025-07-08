@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor "GameClientApplication" as REPOPATT001
+    participant "BackendServiceFacade" as REPOPATT005
+    participant "AnalyticsCollectorEndpoints" as REPOPATT010
+
+    note over REPOPATT001: The entire flow is conditional on the user providing consent for analytics collection (FR-AT-002). If consent is not given, no calls are made.
+    opt 1. Gameplay event occurs (e.g., hint used, level completed)
+        REPOPATT001-REPOPATT005: 2. logAnalyticsEvent(eventName, eventPayload)
+        activate REPOPATT005
+        
+        loop 2.1 Enrich Payload
+            REPOPATT005-REPOPATT005: Enrich payload with context (appVersion, sessionId, etc.)
+        end
+
+        note right of REPOPATT005: This is a fire-and-forget, asynchronous call. The BackendServiceFacade does not wait for a response from the analytics service. This ensures that telemetry collection does not impact core gameplay performance.
+        REPOPATT005-REPOPATT010: 3. LogEvent(eventName, enrichedPayload)
+        activate REPOPATT010
+
+        REPOPATT005--REPOPATT001: return void
+        deactivate REPOPATT005
+
+        loop 3.1 SDK Caching Logic
+            note right of REPOPATT010: The Firebase SDK automatically caches and batches events to optimize battery and network usage on the client's device, as required by FR-AT-001. The actual network request happens later.
+            REPOPATT010-REPOPATT010: [SDK Logic] Cache & Batch Events
+        end
+        deactivate REPOPATT010
+    end
+    
+    loop 4. SDK Batch Sending Logic (at a later time)
+        activate REPOPATT010
+        REPOPATT010-REPOPATT010: [SDK Logic] Send batched events to Firebase backend
+        deactivate REPOPATT010
+    end

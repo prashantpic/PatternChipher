@@ -1,0 +1,149 @@
+Title,Description,Type,Status,Priority,Assignee,Reporter,Due Date,Estimate,Labels,Sprint,Epic,Project,Attachments,Comments,Parent ID,Dependencies,Created At,Updated At,Skills Required
+"Application Core & Lifecycle Management","This epic covers the initial setup of the application, including the core GameManager singleton, application lifecycle hooks (pause, quit), state management, and basic data definitions.","Epic","Backlog","Critical","","pm@project.com","","57.5","core,architecture,lifecycle","","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","","","",""
+"Initialize the Game on First Launch","As a Player, I want the game to initialize all its core systems correctly when I open it so that the application starts reliably and I can get to the main menu without errors.","Story","Backlog","Critical","","pm@project.com","","6.5","bootstrap,initialization","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-001","US-002","","",""
+"Implement AppInitializer.cs Script Logic","Implement the `Awake` method in `AppInitializer.cs`. The logic will check `GameManager.Instance`. If it's null, it will instantiate the `_gameManagerPrefab`. If it already exists, it will do nothing.
+
+**Acceptance Criteria:**
+- Script instantiates `_gameManagerPrefab` if `GameManager.Instance` is null.
+- Script does nothing if `GameManager.Instance` is not null.
+- A [SerializeField] private GameObject `_gameManagerPrefab` exists.","Task","Backlog","Critical","developer@project.com","pm@project.com","","4","core,initialization,bootstrap,Development,SourceCode","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","US-001","TASK-CLIENT-002","","","C#,Unity"
+"Review AppInitializer Script","Conduct a peer code review of the AppInitializer script to ensure its logic is sound and correctly handles the bootstrap sequence.
+
+**Acceptance Criteria:**
+- The code has been reviewed by another developer.
+- Pull request is approved.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2.5","quality,review,Review,QA","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","US-001","TASK-CLIENT-006","","","C#,Unity,Code Review"
+"Manage Application Lifecycle and Save Progress","As a Player, I want my game progress to be saved automatically when the app is paused or closed so that my progress is not lost and the game state persists between sessions.","Story","Backlog","Critical","","pm@project.com","","21","singleton,persistence,lifecycle","","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-001","US-004,US-007","","",""
+"Implement GameManager Singleton Pattern","In GameManager.cs, implement the singleton pattern in the Awake() method. This includes creating the static `Instance` property, checking for duplicate instances, and calling `DontDestroyOnLoad` to ensure it persists across scenes.
+
+**Acceptance Criteria:**
+- GameManager.Instance returns a valid instance of the class.
+- A second GameManager object attempting to initialize is destroyed.
+- The GameManager GameObject is not destroyed upon scene load.","Task","Backlog","Critical","developer@project.com","pm@project.com","","7","core,singleton,architecture,Development,SourceCode","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","RISK-TEC-001: GameManager singleton complexity","US-002","","","","C#,Unity"
+"Write Play Mode Tests for GameManager Singleton Persistence","Using the Unity Test Framework, create Play Mode tests that load a scene and then load a second scene, verifying that the GameManager.Instance remains the same object and is not null after the second scene loads.
+
+**Acceptance Criteria:**
+- A test successfully loads a new scene.
+- The test asserts that `GameManager.Instance` from before the scene load is the same reference as after the scene load.
+- The test suite runs successfully in the Unity Test Runner.","Task","Backlog","Critical","qa-engineer@project.com","pm@project.com","","6.5","testing,playmode,quality,Testing,QA","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","US-002","TASK-CLIENT-002","","","C#,Unity Test Framework"
+"Implement GameManager Lifecycle Hooks for Data Persistence","Implement the OnApplicationPause and OnApplicationQuit methods in GameManager.cs. These methods will call the `_persistenceService.SaveProfile()` method. A mock `IPersistenceService` must be used for testing.
+
+**Acceptance Criteria:**
+- OnApplicationPause(true) invokes the `SaveProfile` method on the persistence service.
+- OnApplicationQuit() invokes the `SaveProfile` method on the persistence service.
+- The code compiles against a mock IPersistenceService interface.","Task","Backlog","Critical","developer@project.com","pm@project.com","","3.5","lifecycle,persistence,integration,Development,SourceCode","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","RISK-TIM-001: Dependency on external persistence service","US-002","TASK-CLIENT-002","","","C#,Unity"
+"Review GameManager Singleton and Lifecycle Code","Conduct a formal peer code review of the GameManager's singleton implementation and lifecycle hooks. Focus on correctness, adherence to patterns, and potential race conditions or memory leaks.
+
+**Acceptance Criteria:**
+- The code has been reviewed by at least one other developer.
+- All comments and suggested changes have been addressed.
+- The pull request is approved.","Task","Backlog","Critical","developer@project.com","pm@project.com","","4","quality,review,Review,QA","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","RISK-TEC-001: GameManager singleton complexity. This review should cover the entire GameManager implementation after S2.","US-002","TASK-CLIENT-002,TASK-CLIENT-003,TASK-CLIENT-008","","","C#,Unity,Code Review"
+"Control Game Flow with a State Machine","As a Player, I want the game to transition smoothly between the main menu, gameplay, and paused states so that the application flow is logical and responsive to my actions.","Story","Backlog","Critical","","pm@project.com","","20","statemachine,core,architecture","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-001","US-002,US-004,US-005,US-007","","",""
+"Implement GameManager State Machine Core Logic","In GameManager.cs, implement the `ChangeState`, `OnEnterState`, and `OnExitState` methods. Use a `GameState` enum and a switch statement. The `ChangeState` method will manage the current state, call the enter/exit methods, and publish a `GameStateChangedEvent` via the `GameEventSystem`.
+
+**Acceptance Criteria:**
+- The `CurrentState` property is correctly updated by `ChangeState`.
+- `OnExitState` is called for the old state before the state changes.
+- `OnEnterState` is called for the new state after the state changes.
+- A `GameStateChangedEvent` is published upon a successful state change.","Task","Backlog","Critical","developer@project.com","pm@project.com","","8.5","core,statemachine,architecture,Development,SourceCode","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","RISK-QLT-001: State machine bugs","US-003","TASK-CLIENT-001,TASK-CLIENT-002,TASK-CLIENT-011,TASK-CLIENT-015","","","C#,Unity,State Machine Pattern"
+"Write Play Mode Tests for State Machine Transitions","Create Play Mode tests for the GameManager's state machine. These tests should trigger `ChangeState` and verify the outcomes: the correct scene is loaded, `Time.timeScale` is set correctly for Paused/Resumed, and the `GameStateChangedEvent` is received by a test listener.
+
+**Acceptance Criteria:**
+- A test verifies that changing state to `MainMenu` results in the `MainMenu` scene being loaded.
+- A test verifies that changing state to `Paused` sets `Time.timeScale` to 0.
+- A test verifies that changing state from `Paused` to `InGame` sets `Time.timeScale` to 1.
+- A test subscribes to `GameStateChangedEvent` and asserts it receives an event with the correct new state after `ChangeState` is called.","Task","Backlog","Critical","qa-engineer@project.com","pm@project.com","","9.5","testing,playmode,quality,statemachine,Testing,QA","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","RISK-QLT-001: State machine bugs","US-003","TASK-CLIENT-008","","","C#,Unity Test Framework"
+"Review State Machine Code","Conduct a peer code review of the entire state machine implementation, focusing on logic correctness, cleanup in OnExitState, and interactions with other systems like SceneLoader and GameEventSystem.
+
+**Acceptance Criteria:**
+- Code has been reviewed by a peer.
+- Pull request is approved.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2","quality,review,Review,QA","Sprint 2","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","US-003","TASK-CLIENT-008","","","C#,Unity,Code Review"
+"Establish Core Game State and Scene Definitions","As a Developer, I want strongly-typed enumerations for game states and scenes so that the code is more readable, maintainable, and less prone to errors from 'magic strings'.","Story","Backlog","Critical","","pm@project.com","","2","enum,setup,core","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-001","","","",""
+"Create GameState.cs and SceneId.cs enum files","Create the two C# script files containing the public enum definitions for GameState and SceneId as specified in the SDS. This provides type-safe constants for state management and scene loading.
+
+**Acceptance Criteria:**
+- File `Assets/PatternCipher/Client/Scripts/Application/GameState.cs` is created and contains the `GameState` enum with all specified members.
+- File `Assets/PatternCipher/Client/Scripts/Scenes/SceneId.cs` is created and contains the `SceneId` enum with all specified members.
+- The project compiles successfully after adding the files.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2","core,enum,setup,Development,SourceCode","Sprint 1","Application Core & Lifecycle Management","GameClientApplication (REPO-PATT-001)","","","US-004","","","","C#"
+"Decoupled Communication & Scene Flow","This epic focuses on creating systems for decoupled communication (Event Bus) and managing the flow between different scenes asynchronously.","Epic","Backlog","Critical","","pm@project.com","","29","events,scenes,architecture","","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","","","",""
+"Enable Decoupled Communication Between Systems","As a Developer, I want a global event system so that I can make different game systems communicate with each other without creating tight dependencies, making the codebase more modular and easier to extend.","Story","Backlog","Critical","","pm@project.com","","12.5","eventbus,architecture,decoupling","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-002","","","",""
+"Implement static GameEventSystem","Create the static `GameEventSystem.cs` class. Implement the generic `Subscribe<T>`, `Unsubscribe<T>`, and `Publish<T>` methods using a `Dictionary<Type, Delegate>` to store and manage event listeners.
+
+**Acceptance Criteria:**
+- The `Subscribe` method correctly adds a listener delegate for a given event type.
+- The `Publish` method invokes all subscribed listeners for the published event type.
+- The `Unsubscribe` method correctly removes a listener.
+- The system handles publishing events with no listeners without errors.
+- Unsubscribing the last listener cleans up the entry in the internal dictionary.","Task","Backlog","Critical","developer@project.com","pm@project.com","","5","core,events,architecture,Development,SourceCode","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","RISK-PER-001: Event system memory leaks","US-005","","","","C#,Event-Driven Architecture"
+"Write Edit Mode Tests for GameEventSystem","Create unit tests for the GameEventSystem. The tests should cover all core functionality: subscribing a listener, receiving a published event, unsubscribing, and ensuring no event is received after unsubscribing.
+
+**Acceptance Criteria:**
+- A test verifies a subscribed listener's callback is invoked when its event is published.
+- A test verifies an unsubscribed listener's callback is not invoked.
+- A test verifies multiple listeners for the same event all receive the event.
+- Tests run successfully in the Unity Test Runner's Edit Mode.","Task","Backlog","Critical","qa-engineer@project.com","pm@project.com","","5","testing,editmode,quality,events,Testing,QA","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","US-005","TASK-CLIENT-011","","","C#,Unity Test Framework"
+"Review GameEventSystem Implementation","Conduct a peer code review of the GameEventSystem, focusing on thread safety (if applicable), memory management, and correctness of the delegate handling.
+
+**Acceptance Criteria:**
+- Code has been reviewed by a peer.
+- Pull request is approved.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2.5","quality,review,Review,QA","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","US-005","TASK-CLIENT-011","","","C#,Code Review"
+"Define Data Contracts for Core Game Events","As a Developer, I want clear, defined data structures for core game events so that there is a consistent and type-safe contract for the information passed between systems via the event bus.","Story","Backlog","Critical","","pm@project.com","","2","events,data-model","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-002","","","",""
+"Create CoreGameEvents.cs with Event Structs","Create the `CoreGameEvents.cs` file. Define the public structs for `GameStateChangedEvent`, `LevelStartedEvent`, `LevelCompletedEvent`, and `SaveGameRequestEvent` as specified in the SDS.
+
+**Acceptance Criteria:**
+- File `Assets/PatternCipher/Client/Scripts/Events/CoreGameEvents.cs` is created.
+- All specified event structs are defined with their correct public members.
+- The project compiles successfully.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2","events,data-model,setup,Development,SourceCode","Sprint 1","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","US-006","","","","C#"
+"Transition Smoothly Between Game Scenes","As a Player, I want the game to transition between screens (like from the menu to a level) without freezing or stuttering so that the experience feels polished and professional.","Story","Backlog","Critical","","pm@project.com","","14.5","scenemanagement,async,ux","Sprint 2","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-002","US-004","","",""
+"Implement SceneLoader.cs Utility","Create the `SceneLoader.cs` class. Implement a public `async Task LoadSceneAsync(SceneId sceneId, ...)` method that uses `SceneManager.LoadSceneAsync`. It should include placeholders to trigger loading screen UI visibility.
+
+**Acceptance Criteria:**
+- The `LoadSceneAsync` method correctly starts an asynchronous scene load using the string name from the `SceneId` enum.
+- The method returns a `Task` that completes only after the scene has loaded.
+- Placeholder calls/events for showing and hiding a loading screen are present before and after the `LoadSceneAsync` operation.","Task","Backlog","Critical","developer@project.com","pm@project.com","","6.5","core,scenemanagement,utility,Development,SourceCode","Sprint 2","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","RISK-QLT-002: Async scene loading glitches","US-007","TASK-CLIENT-001","","","C#,Unity,Async/Await"
+"Write Play Mode Tests for SceneLoader","Create a Play Mode test that calls `SceneLoader.LoadSceneAsync` and awaits its completion. The test should then verify that the `SceneManager.GetActiveScene().name` matches the requested scene.
+
+**Acceptance Criteria:**
+- A test successfully calls and awaits `LoadSceneAsync`.
+- After awaiting, the test asserts the active scene's name is correct.
+- The test runs successfully in the Unity Test Runner.","Task","Backlog","Critical","qa-engineer@project.com","pm@project.com","","5.5","testing,playmode,quality,Testing,QA","Sprint 2","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","US-007","TASK-CLIENT-015","","","C#,Unity Test Framework"
+"Review SceneLoader Implementation","Conduct a peer code review of the SceneLoader, focusing on the correct use of async/await and its integration points with a loading UI.
+
+**Acceptance Criteria:**
+- Code has been reviewed by a peer.
+- Pull request is approved.","Task","Backlog","Critical","developer@project.com","pm@project.com","","2.5","quality,review,Review,QA","Sprint 2","Decoupled Communication & Scene Flow","GameClientApplication (REPO-PATT-001)","","","US-007","TASK-CLIENT-015","","","C#,Unity,Code Review"
+"Project Configuration & Assembly Setup","This epic covers all project-level configuration tasks, including creating assembly definitions, setting up prefabs for core managers, and configuring the initial scenes and build settings.","Epic","Backlog","Critical","","pm@project.com","","13.5","setup,configuration,devops","","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","","","",""
+"Enforce Architectural Boundaries for the Application Layer","As a Developer, I want to define a specific assembly for the Application layer so that I can enforce architectural boundaries, control dependencies, and improve code compilation times.","Story","Backlog","Critical","","pm@project.com","","4.5","architecture,asmdef,setup","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-003","","","",""
+"Create and Configure PatternCipher.Client.asmdef","In the Unity Editor, create a new Assembly Definition file at `Assets/PatternCipher/Client/`. Name it `PatternCipher.Client`. Use the Inspector to add references to the other project assemblies as specified in the SDS.
+
+**Acceptance Criteria:**
+- The file `PatternCipher.Client.asmdef` exists at the correct path.
+- In the Inspector, its name is `PatternCipher.Client`.
+- References to `PatternCipher.Domain`, `PatternCipher.Presentation`, `...Persistence`, `...Firebase`, and `...Shared` are added.
+- The `Auto Referenced` checkbox is unchecked.","Task","Backlog","Critical","devops@project.com","pm@project.com","","3.5","setup,configuration,architecture,Configuration,DevOps","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","RISK-TEC-002: Incorrect asmdef configuration","US-008","","","","Unity Editor"
+"Review .asmdef Configuration","Have a second developer review the .asmdef file in the Unity Inspector to confirm all references are correct and settings match the SDS.
+
+**Acceptance Criteria:**
+- The .asmdef configuration has been validated against the SDS by a peer.","Task","Backlog","Critical","devops@project.com","pm@project.com","","1","quality,review,configuration,Review,QA","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","US-008","TASK-CLIENT-018","","","Unity Editor"
+"Create a Reusable GameManager Asset","As a Developer, I want a pre-configured 'GameManager' prefab so that I can easily instantiate the central orchestrator and all its associated persistent managers with all dependencies pre-linked.","Story","Backlog","Critical","","pm@project.com","","4","setup,prefab,configuration","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-003","US-002","","",""
+"Create and Configure GameManager Prefab","In the Unity Editor, create a new GameObject, attach the `GameManager.cs` script (and other persistent managers), configure any `[SerializeField]` references in the Inspector, and save it as a prefab.
+
+**Acceptance Criteria:**
+- A prefab named `GameManager.prefab` exists.
+- The prefab has the `GameManager.cs` component attached.
+- Serialized fields on the component are assigned (e.g., `_levelManager`).","Task","Backlog","Critical","developer@project.com","pm@project.com","","3.5","setup,configuration,prefab,Configuration,Development","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","US-009","TASK-CLIENT-002,TASK-CLIENT-015","","","Unity Editor"
+"Review GameManager Prefab","Have a peer review the GameManager prefab to ensure it's configured correctly.
+
+**Acceptance Criteria:**
+- Prefab configuration verified by a peer.","Task","Backlog","Critical","developer@project.com","pm@project.com","","0.5","quality,review,Review,QA","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","US-009","TASK-CLIENT-020","","","Unity Editor"
+"Configure the Application's Initial Scene","As a Developer, I want a dedicated 'Bootstrap' scene configured as the game's entry point so that the application has a reliable and controlled starting sequence that I can manage and debug.","Story","Backlog","Critical","","pm@project.com","","5","setup,scene,configuration,build","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","","EPIC-CLIENT-003","US-001,US-009","","",""
+"Create and Configure Bootstrap.unity Scene","Create a new scene named `Bootstrap`. In this scene, create an empty GameObject and attach the `AppInitializer.cs` script. Drag the `GameManager.prefab` to the corresponding `[SerializeField]` on the script in the Inspector.
+
+**Acceptance Criteria:**
+- The scene `Bootstrap.unity` exists.
+- It contains a GameObject with the `AppInitializer` component.
+- The `_gameManagerPrefab` field on the `AppInitializer` is assigned the correct prefab.","Task","Backlog","Critical","developer@project.com","pm@project.com","","3","setup,configuration,scene,Configuration,Development","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","RISK-OPR-001: Manual Build Settings configuration","US-010","TASK-CLIENT-006,TASK-CLIENT-020","","","Unity Editor"
+"Configure Unity Build Settings","Open the Unity Build Settings window. Add the `Bootstrap.unity` scene and any other required scenes (MainMenu, Game). Ensure the `Bootstrap` scene is at the top of the list (index 0).
+
+**Acceptance Criteria:**
+- The Build Settings window has the `Bootstrap`, `MainMenu`, and `Game` scenes added.
+- The `Bootstrap` scene is at index 0.","Task","Backlog","Critical","devops@project.com","pm@project.com","","2","setup,configuration,build,Configuration,DevOps","Sprint 1","Project Configuration & Assembly Setup","GameClientApplication (REPO-PATT-001)","","RISK-OPR-001: Manual Build Settings configuration","US-010","TASK-CLIENT-022","","","Unity Editor"

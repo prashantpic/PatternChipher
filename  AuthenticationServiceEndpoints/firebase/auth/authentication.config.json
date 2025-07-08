@@ -1,0 +1,22 @@
+{
+  "enabledProviders": {
+    "anonymous": {
+      "enabled": true,
+      "description": "Provides a low-friction, PII-free entry point for all users, including those under the age of consent. This is the default authentication method. Fulfills NFR-LC-002a."
+    },
+    "google": {
+      "enabled": true,
+      "description": "Enables Google Sign-In. The client application MUST gate this option, offering it only to users who pass the age gate (>= 13 years or applicable age of consent). Fulfills FR-ONL-003 by providing a persistent identity."
+    },
+    "apple": {
+      "enabled": true,
+      "description": "Enables Sign in with Apple. The client application MUST gate this option, offering it only to users who pass the age gate (>= 13 years or applicable age of consent). Fulfills FR-ONL-003 by providing a persistent identity."
+    }
+  },
+  "accountManagement": {
+    "accountLinking": {
+      "enabled": true,
+      "description": "Allows a single user account to be linked with multiple sign-in providers. This is critical for allowing an anonymous user to upgrade to a Google or Apple account, thereby preserving their game progress. Fulfills FR-ONL-003 for cross-device synchronization."
+    }
+  }
+}

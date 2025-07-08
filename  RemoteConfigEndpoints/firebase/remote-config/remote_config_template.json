@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0.0",
+  "featureFlags": {
+    "isCloudSaveEnabled": true,
+    "isLeaderboardsEnabled": true,
+    "isAchievementsEnabled": true,
+    "isDailyChallengeActive": false,
+    "isStoreEnabled": false
+  },
+  "scoringRules": {
+    "baseScorePerLevel": 1000,
+    "efficiencyBonus": {
+      "multiplierPerMoveUnderPar": 50,
+      "maxBonus": 2500
+    },
+    "speedBonus": {
+      "baseTimeSeconds": 120,
+      "bonusPerSecondUnder": 10,
+      "maxBonus": 1200
+    },
+    "comboBonus": {
+      "baseBonus": 100,
+      "multiplierPerChain": 1.5
+    },
+    "starThresholds": {
+      "star2": 5000,
+      "star3": 8000
+    }
+  },
+  "difficultyTiers": [
+    {
+      "tierId": "BEGINNER",
+      "tierName": "Beginner Puzzles",
+      "unlockCondition": {
+        "type": "LEVEL_COUNT",
+        "value": 0
+      },
+      "gridSizeRange": [
+        "3x3",
+        "4x4"
+      ],
+      "symbolCountRange": [
+        3,
+        4
+      ],
+      "minOptimalMovesRange": [
+        3,
+        8
+      ],
+      "specialTileTypesAllowed": [],
+      "puzzleTypesAllowed": [
+        "DIRECT_MATCH"
+      ]
+    },
+    {
+      "tierId": "INTERMEDIATE",
+      "tierName": "Intermediate Challenges",
+      "unlockCondition": {
+        "type": "STARS",
+        "value": 25
+      },
+      "gridSizeRange": [
+        "4x4",
+        "5x5"
+      ],
+      "symbolCountRange": [
+        4,
+        6
+      ],
+      "minOptimalMovesRange": [
+        6,
+        15
+      ],
+      "specialTileTypesAllowed": [
+        "LOCKED"
+      ],
+      "puzzleTypesAllowed": [
+        "DIRECT_MATCH",
+        "RULE_BASED"
+      ]
+    },
+    {
+      "tierId": "ADVANCED",
+      "tierName": "Advanced Conundrums",
+      "unlockCondition": {
+        "type": "STARS",
+        "value": 100
+      },
+      "gridSizeRange": [
+        "5x5",
+        "6x6"
+      ],
+      "symbolCountRange": [
+        5,
+        7
+      ],
+      "minOptimalMovesRange": [
+        12,
+        25
+      ],
+      "specialTileTypesAllowed": [
+        "LOCKED",
+        "TRANSFORMER"
+      ],
+      "puzzleTypesAllowed": [
+        "RULE_BASED",
+        "PATH_FINDING"
+      ]
+    }
+  ],
+  "pcgRules": {
+    "controlledIntroduction": [
+      {
+        "unlocksAtLevel": 5,
+        "elementType": "SPECIAL_TILE",
+        "elementId": "LOCKED"
+      },
+      {
+        "unlocksAtLevel": 10,
+        "elementType": "PUZZLE_TYPE",
+        "elementId": "RULE_BASED"
+      },
+      {
+        "unlocksAtStars": 100,
+        "elementType": "SPECIAL_TILE",
+        "elementId": "TRANSFORMER"
+      },
+      {
+        "unlocksAtStars": 150,
+        "elementType": "PUZZLE_TYPE",
+        "elementId": "PATH_FINDING"
+      }
+    ]
+  }
+}

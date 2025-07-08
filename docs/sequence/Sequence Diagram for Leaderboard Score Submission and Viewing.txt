@@ -1,0 +1,51 @@
+sequenceDiagram
+    actor "Player" as actorplayer
+    participant "GameClientApplication" as REPOPATT001
+    participant "BackendServiceFacade" as REPOPATT005
+    participant "LeaderboardServiceEndpoints" as REPOPATT008
+    participant "AuthenticationServiceEndpoints" as REPOPATT006
+    participant "CloudDataEndpoints" as REPOPATT007
+
+    loop Part 1: Score Submission
+        actorplayer-REPOPATT001: 1.1 Completes Level
+        activate REPOPATT001
+        REPOPATT001-REPOPATT005: 1.2 submitScore(levelResult)
+        activate REPOPATT005
+        REPOPATT005-REPOPATT008: 1.3 RPC: invoke('validateAndSubmitScore', payload)
+        activate REPOPATT008
+        REPOPATT008-REPOPATT006: 1.3.1 verifyIdToken(authToken)
+        activate REPOPATT006
+        REPOPATT006--REPOPATT008: [userDecodedToken]
+        deactivate REPOPATT006
+        alt Check Token & Score Plausibility
+            note over REPOPATT008: Server-side validation logic implements BR-LEAD-001 to check for plausible scores and prevent cheating (NFR-SEC-003).
+            else [Token valid and Score is plausible]
+                REPOPATT008-REPOPATT007: 1.3.2.1.1 create('leaderboardEntries', validScoreData)
+                activate REPOPATT007
+                REPOPATT007--REPOPATT008: [writeSuccess]
+                deactivate REPOPATT007
+            else [Else: Token invalid or Score not plausible]
+                REPOPATT008-REPOPATT008: 1.3.2.2.1 Log invalid submission attempt
+        end
+        REPOPATT008--REPOPATT005: [submissionResult]
+        deactivate REPOPATT008
+        REPOPATT005--REPOPATT001: 1.4 onSubmissionComplete(submissionResult)
+        deactivate REPOPATT005
+        deactivate REPOPATT001
+    end
+
+    loop Part 2: Score Viewing
+        actorplayer-REPOPATT001: 2.1 Views Leaderboard Screen
+        activate REPOPATT001
+        REPOPATT001-REPOPATT005: 2.2 fetchLeaderboard(levelId)
+        activate REPOPATT005
+        REPOPATT005-REPOPATT007: 2.3 query('leaderboardEntries').orderBy('score').limit(50)
+        activate REPOPATT007
+        note right of REPOPATT007: Data is read directly from Firestore, relying on Firestore Security Rules to enforce read access.
+        REPOPATT007--REPOPATT005: [topScores[]]
+        deactivate REPOPATT007
+        REPOPATT005--REPOPATT001: 2.4 onLeaderboardData(topScores[])
+        deactivate REPOPATT005
+        REPOPATT001--actorplayer: 2.5 Displays Leaderboard Data
+        deactivate REPOPATT001
+    end

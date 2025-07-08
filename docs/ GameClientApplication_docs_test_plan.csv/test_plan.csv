@@ -1,0 +1,87 @@
+test_id,feature_area,test_type,test_level,priority,automation_candidate,test_description,preconditions,test_steps,expected_result,test_data_needs,tools_required,estimated_effort,dependencies
+GCA-INT-001,Initialization,"Functional, Regression",Integration,Critical,High,"Verifies that the AppInitializer script correctly instantiates the GameManager from a prefab when the game starts for the first time.","The Bootstrap.unity scene is the active scene. No GameManager instance exists. The AppInitializer script has a valid reference to the GameManager prefab.","1. Load the Bootstrap scene.
+2. Allow the Awake() method of AppInitializer to execute.
+3. Check for an instance of GameManager in the scene.","A single GameManager object exists in the scene hierarchy and GameManager.Instance is not null.",GameManager.prefab,Unity Test Framework (Play Mode),2,TASK-CLIENT-006
+GCA-INT-002,Initialization,"Functional, Regression",Integration,High,High,"Verifies that the AppInitializer script does not create a duplicate GameManager if one already exists (e.g., returning to the Bootstrap scene).","A GameManager instance already exists in the scene (marked with DontDestroyOnLoad). The Bootstrap.unity scene is loaded.","1. Manually create a GameManager instance and ensure it persists.
+2. Load the Bootstrap scene.
+3. Allow the Awake() method of AppInitializer to execute.
+4. Count the number of GameManager objects in the scene.","There is only one GameManager object in the scene hierarchy.",GameManager.prefab,Unity Test Framework (Play Mode),1,TASK-CLIENT-006
+GCA-INT-003,Lifecycle,"Functional, Regression",Integration,Critical,High,"Verifies the GameManager singleton pattern correctly destroys duplicate instances that are created after the initial one.","The initial GameManager instance is already created and in the scene.","1. In a test, get a reference to `GameManager.Instance`.
+2. Programmatically create a new GameObject and add a GameManager component to it.
+3. Wait for one frame for its Awake() method to run.
+4. Check if the newly created GameManager object was destroyed.","The new GameManager GameObject is destroyed, and `GameManager.Instance` still points to the original instance.",N/A,Unity Test Framework (Play Mode),2,TASK-CLIENT-002
+GCA-INT-004,Lifecycle,"Functional, Regression",Integration,Critical,High,"Verifies that the GameManager instance persists across scene loads, which is the core function of `DontDestroyOnLoad`.","The Bootstrap scene is loaded, which creates the initial GameManager instance.","1. Start the test in the Bootstrap scene.
+2. Get the instance ID of `GameManager.Instance`.
+3. Load a new scene (e.g., MainMenu).
+4. After the new scene is loaded, get the instance ID of `GameManager.Instance` again.","`GameManager.Instance` is not null in the new scene, and its instance ID is identical to the one from the Bootstrap scene.",Two scenes (e.g., Bootstrap, MainMenu) configured in Build Settings.,Unity Test Framework (Play Mode),2,TASK-CLIENT-003
+GCA-INT-005,Lifecycle,"Functional, Regression",Integration,High,Medium,"Verifies that the OnApplicationPause(true) lifecycle hook correctly triggers a call to the persistence service's save method.","GameManager is running. A mock IPersistenceService has been injected into the GameManager.","1. Set up a mock `IPersistenceService`.
+2. Configure the mock to expect a call to `SaveProfile()`.
+3. Call `GameManager.Instance.OnApplicationPause(true)`.
+4. Verify that the mock service's `SaveProfile()` method was called exactly once.","The mock service's `SaveProfile()` method is invoked.",Mock `IPersistenceService` implementation.,Unity Test Framework, Mocking Framework (e.g., NSubstitute),2.5,TASK-CLIENT-008
+GCA-INT-006,Lifecycle,"Functional, Regression",Integration,Critical,Medium,"Verifies that the OnApplicationQuit() lifecycle hook correctly triggers a call to the persistence service's save method.","GameManager is running. A mock IPersistenceService has been injected into the GameManager.","1. Set up a mock `IPersistenceService`.
+2. Configure the mock to expect a call to `SaveProfile()`.
+3. Call `GameManager.Instance.OnApplicationQuit()`.
+4. Verify that the mock service's `SaveProfile()` method was called exactly once.","The mock service's `SaveProfile()` method is invoked.",Mock `IPersistenceService` implementation.,Unity Test Framework, Mocking Framework (e.g., NSubstitute),2.5,TASK-CLIENT-008
+GCA-INT-007,State Machine,"Functional, Regression",Integration,Critical,High,"Verifies that calling ChangeState correctly updates the GameManager's CurrentState property and publishes a GameStateChangedEvent.","GameManager is running. A test event listener is subscribed to `GameStateChangedEvent`.","1. Note the `GameManager.CurrentState`.
+2. Set up a listener for `GameStateChangedEvent` that captures the received event.
+3. Call `GameManager.Instance.ChangeState(GameState.Paused)`.
+4. Assert that `GameManager.CurrentState` is now `GameState.Paused`.
+5. Assert that the listener received an event and its payload contains `GameState.Paused`.","The `CurrentState` property is updated to the new state, and a `GameStateChangedEvent` with the correct new state is published.",`GameEventSystem` and `GameState` enum.,Unity Test Framework (Play Mode),3,TASK-CLIENT-009
+GCA-INT-008,State Machine,"Functional, Regression",Integration,Critical,High,"Verifies that transitioning to the `Paused` state sets Time.timeScale to 0.","The game is in a state where Time.timeScale is 1 (e.g., InGame).","1. Set `Time.timeScale` to 1.
+2. Call `GameManager.Instance.ChangeState(GameState.Paused)`.
+3. Check the value of `Time.timeScale`.","`Time.timeScale` is equal to 0.",N/A,Unity Test Framework (Play Mode),1,TASK-CLIENT-010
+GCA-INT-009,State Machine,"Functional, Regression",Integration,Critical,High,"Verifies that transitioning from `Paused` back to `InGame` resets Time.timeScale to 1.","The game is in the `Paused` state, with Time.timeScale at 0.","1. Call `GameManager.Instance.ChangeState(GameState.Paused)` to ensure the precondition.
+2. Call `GameManager.Instance.ChangeState(GameState.InGame)`.
+3. Check the value of `Time.timeScale`.","`Time.timeScale` is equal to 1.",N/A,Unity Test Framework (Play Mode),1,TASK-CLIENT-010
+GCA-INT-010,State Machine,"Functional, Regression",Integration,Critical,High,"Verifies that a state change correctly triggers a scene load via the SceneLoader.","GameManager is running and has a reference to a SceneLoader. The MainMenu scene is in the Build Settings.","1. Start the test in a scene other than MainMenu (e.g., Bootstrap).
+2. Call `GameManager.Instance.ChangeState(GameState.MainMenu)`.
+3. Await the scene transition.
+4. Check the name of the currently active scene.","The active scene's name is ""MainMenu"".",MainMenu.unity scene, Unity Build Settings configured.,Unity Test Framework (Play Mode),3,TASK-CLIENT-010
+GCA-UT-001,Event System,"Unit, Regression",Unit,Critical,High,"Verifies that a subscribed listener is correctly invoked when a relevant event is published.","N/A","1. Define a simple event struct `TestEvent`.
+2. Create a listener method that sets a boolean flag to true.
+3. Subscribe the listener to `TestEvent` using `GameEventSystem.Subscribe`.
+4. Publish a `TestEvent` using `GameEventSystem.Publish`.
+5. Assert that the boolean flag is now true.","The subscribed listener method is executed, and the boolean flag is set to true.",N/A,Unity Test Framework (Edit Mode),1,TASK-CLIENT-012
+GCA-UT-002,Event System,"Unit, Regression",Unit,Critical,High,"Verifies that a listener does not receive an event after it has unsubscribed.","A listener is subscribed to an event.","1. Subscribe a listener that increments a counter.
+2. Unsubscribe the same listener using `GameEventSystem.Unsubscribe`.
+3. Publish the event.
+4. Assert that the counter remains at its initial value (0).","The unsubscribed listener is not invoked, and the counter is not incremented.",N/A,Unity Test Framework (Edit Mode),1,TASK-CLIENT-012
+GCA-UT-003,Event System,"Functional, Unit",Unit,High,High,"Verifies that multiple listeners for the same event type all receive the published event.","N/A","1. Subscribe three different listeners to the same event type. Each listener increments a separate counter.
+2. Publish a single event of that type.
+3. Assert that all three counters have been incremented to 1.","All three subscribed listeners are invoked.",N/A,Unity Test Framework (Edit Mode),1,TASK-CLIENT-012
+GCA-UT-004,Event System,"Functional, Unit",Unit,High,High,"Verifies that publishing an event with no subscribers does not cause an error.","The event system is initialized, but no listeners are subscribed for `TestEvent`.","1. Call `GameEventSystem.Publish(new TestEvent())`.","The system does not throw any exceptions.",N/A,Unity Test Framework (Edit Mode),0.5,TASK-CLIENT-011
+GCA-INT-011,Scene Management,"Functional, Regression",Integration,Critical,High,"Verifies that the SceneLoader can successfully load a scene asynchronously and the active scene changes.","The 'Game' scene is included in the Unity Build Settings. The test is running in a different scene.","1. Create an instance of the SceneLoader.
+2. Call `sceneLoader.LoadSceneAsync(SceneId.Game)` and `await` the returned Task.
+3. After the await, get the active scene using `SceneManager.GetActiveScene()`.
+4. Assert that the active scene's name is ""Game"".","The new active scene is the one requested, confirming the load was successful.",Game.unity scene, Unity Build Settings configured.,Unity Test Framework (Play Mode),2,TASK-CLIENT-016
+GCA-CONF-001,Architecture,Functional,System,Critical,Manual,"Verifies that the architectural boundaries defined by the .asmdef file are enforced by attempting to create an illegal dependency.","The `PatternCipher.Client.asmdef` and `PatternCipher.Domain.asmdef` files exist and are configured.","1. Open a script file within the Domain assembly (e.g., a domain model).
+2. Add a `using PatternCipher.Client.Application;` statement.
+3. Attempt to declare a variable of type `GameManager`.
+4. Attempt to compile the code in the Unity Editor.","A compilation error occurs, stating that the type or namespace `GameManager` (or `PatternCipher.Client.Application`) could not be found, proving the dependency is correctly blocked.",N/A,Unity Editor,1,US-008
+GCA-SMOKE-001,System,Smoke,System,Critical,High,"End-to-end test of the application's initial startup sequence.","The game is built or running in the editor. Build Settings correctly list Bootstrap scene at index 0.","1. Launch the application.
+2. Observe the startup sequence.
+3. The game should transition from the Bootstrap scene to the MainMenu scene automatically.
+4. The game should be in the `MainMenu` state and responsive.","The application loads without errors and lands on the main menu screen, with `GameManager.CurrentState` being `GameState.MainMenu`.",Full set of scenes (Bootstrap, MainMenu) and prefabs (GameManager).,Unity Editor (Play Mode) or Built Application,1.5,US-010
+GCA-PERF-001,Event System,Non-Functional,Unit,Medium,Low,"Measures the performance impact of publishing an event with a large number of subscribers to establish a benchmark and detect regressions.","N/A","1. Subscribe a large number (e.g., 10,000) of simple listeners to a single event type.
+2. Use the Unity Profiler or a Stopwatch to measure the time taken to publish a single event.
+3. Record the time.
+4. Unsubscribe all listeners and measure the time taken to publish again (baseline).
+5. Compare the results.","The time taken to publish is within an acceptable threshold (e.g., < 1ms). This test establishes a benchmark for future performance regression testing.",N/A,"Unity Test Framework (Edit Mode), Unity Profiler",2,"RISK-PER-001"
+GCA-PERF-002,Event System,Non-Functional,System,Medium,Manual,"Checks for memory leaks related to the GameEventSystem where listeners are not unsubscribed upon object destruction.","The game is running. A test scene is created where GameObjects subscribe to an event in OnEnable but do not unsubscribe in OnDisable/OnDestroy.","1. Open the Unity Memory Profiler.
+2. Take a memory snapshot.
+3. Instantiate and then destroy a large number of GameObjects that subscribe to the GameEventSystem.
+4. Force garbage collection.
+5. Take another memory snapshot.
+6. Compare the snapshots, looking for orphaned GameObjects or event delegates that are still in memory.","The memory snapshots show that the destroyed GameObjects and their listeners have been garbage collected, with no unexpected increase in the event system's internal dictionary.",A test scene with misbehaving components.,Unity Memory Profiler,4,RISK-PER-001
+GCA-CONF-002,Configuration,"Functional, Regression",System,Critical,Manual,"Verifies that the GameManager prefab is correctly configured with all its necessary script references.","The `GameManager.prefab` exists in the project assets.","1. Select the `GameManager.prefab` in the Unity Project window.
+2. In the Inspector, examine the `GameManager` component.
+3. Check all `[SerializeField]` fields (e.g., `_levelManager`).
+4. Ensure that no fields are unassigned/null that are expected to be assigned.","All required serialized fields on the GameManager component within the prefab are assigned with the correct references.",GameManager.prefab,Unity Editor,0.5,US-009
+GCA-CONF-003,Configuration,Functional,System,Critical,Manual,"Verifies the Unity Build Settings are configured correctly for the application to start.","The project is open in the Unity Editor.","1. Open File > Build Settings.
+2. Examine the 'Scenes In Build' list.
+3. Confirm that 'Bootstrap.unity' is present and is at index 0.
+4. Confirm that 'MainMenu.unity' and 'Game.unity' are also in the list.","The `Bootstrap` scene is at index 0, and all other essential scenes are included in the build.",All game scenes (Bootstrap, MainMenu, Game).,Unity Editor,0.5,TASK-CLIENT-023
+GCA-SYS-001,State Machine,Functional,System,Critical,Manual,"Verifies the pause and resume functionality from a user's perspective during gameplay.","The user is in the 'InGame' scene.","1. Press the pause button in the UI.
+2. Observe that a pause menu appears and all gameplay animations/actions stop.
+3. Press the resume button on the pause menu.
+4. Observe that the pause menu disappears and gameplay resumes from where it left off.","The game correctly freezes when paused and unfreezes when resumed. `Time.timeScale` is manipulated correctly by the state machine in a real gameplay scenario.",A functional UI with pause/resume buttons.,Built Application,1,US-003

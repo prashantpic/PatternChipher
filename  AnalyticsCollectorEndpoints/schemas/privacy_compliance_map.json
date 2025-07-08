@@ -1,0 +1,33 @@
+{
+  "compliance_actions": {
+    "ALLOW": "The parameter can be collected regardless of consent status (for non-PII operational data).",
+    "OMIT_IF_UNCONSENTED": "The parameter must be omitted if the user has not granted analytics_storage consent.",
+    "OMIT_FOR_CHILD": "The parameter must be omitted if the user is identified as a child under COPPA/GDPR-K."
+  },
+  "parameter_map": {
+    "level_id": "ALLOW",
+    "puzzle_type": "ALLOW",
+    "difficulty_tier": "ALLOW",
+    "moves_taken": "ALLOW",
+    "time_taken_seconds": "ALLOW",
+    "par_moves": "ALLOW",
+    "score_achieved": "ALLOW",
+    "stars_earned": "ALLOW",
+    "fail_reason": "ALLOW",
+    "time_in_level_seconds": "ALLOW",
+    "moves_at_hint": "ALLOW",
+    "moves_at_undo": "ALLOW",
+    "setting_name": "ALLOW",
+    "setting_value": "ALLOW",
+    "tutorial_id": "ALLOW",
+    "step_index": "ALLOW",
+    "status": "ALLOW"
+  },
+  "user_property_map": {
+    "player_first_open_date": "OMIT_IF_UNCONSENTED",
+    "highest_level_pack_unlocked": "OMIT_IF_UNCONSENTED",
+    "total_stars_collected": "OMIT_IF_UNCONSENTED",
+    "player_consent_status": "ALLOW",
+    "last_played_puzzle_type": "OMIT_IF_UNCONSENTED"
+  }
+}

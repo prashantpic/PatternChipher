@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    // {
+    //   "collectionGroup": "userProfiles",
+    //   "queryScope": "COLLECTION",
+    //   "fields": [
+    //     { "fieldPath": "some_future_field", "order": "ASCENDING" },
+    //     { "fieldPath": "timestamp_of_last_cloud_sync", "order": "DESCENDING" }
+    //   ]
+    // }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://patterncipher.com/analytics/events/level_outcome.schema.json",
+  "title": "Level Outcome Event",
+  "description": "Defines the data contract for an event logged when a level concludes (completion, failure, or quit). FR-AT-001, FR-B-006.",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "description": "The constant name of the event.",
+      "type": "string",
+      "const": "level_outcome"
+    },
+    "event_timestamp": {
+      "description": "The ISO 8601 timestamp when the event occurred.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "player_id": {
+      "description": "The non-personally-identifiable GUID for the player.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "session_id": {
+      "description": "A unique identifier for the game session.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "level_id": {
+      "description": "A unique identifier for the level that was played.",
+      "type": "string"
+    },
+    "outcome": {
+      "description": "The result of the level attempt.",
+      "type": "string",
+      "enum": [
+        "complete",
+        "fail",
+        "quit"
+      ]
+    },
+    "time_taken_seconds": {
+      "description": "Total time in seconds the player spent in the level.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "moves_taken": {
+      "description": "Total number of valid moves the player made.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "score": {
+      "description": "The final score achieved. Only applicable if outcome is 'complete'.",
+      "type": "integer"
+    },
+    "stars_awarded": {
+      "description": "The number of stars awarded (1-3). Only applicable if outcome is 'complete'.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "failure_reason": {
+      "description": "The reason for failure. Only applicable if outcome is 'fail'.",
+      "type": "string",
+      "enum": [
+        "OutOfMoves",
+        "TimerExpired"
+      ]
+    }
+  },
+  "required": [
+    "event_name",
+    "event_timestamp",
+    "player_id",
+    "session_id",
+    "level_id",
+    "outcome",
+    "time_taken_seconds",
+    "moves_taken"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "score",
+          "stars_awarded"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "fail"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "failure_reason"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

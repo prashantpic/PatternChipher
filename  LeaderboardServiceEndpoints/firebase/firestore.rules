@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow public read access to leaderboards.
+    // This allows unauthenticated users to view leaderboards.
+    // Can be changed to `allow read: if request.auth != null;` to restrict to logged-in users.
+    match /leaderboards/{leaderboardId} {
+      allow read: if true;
+
+      // DENY all client-side write operations.
+      // Scores can only be written by the backend via the Cloud Function,
+      // which uses the Admin SDK and bypasses these rules.
+      allow write: if false;
+    }
+
+    // Collection to manage rate limiting for score submissions.
+    // Users can only create a document for themselves, and only update their own timestamp.
+    match /scoreSubmissions/{userId} {
+        allow read, update: if request.auth.uid == userId;
+        allow create: if request.auth.uid == userId;
+    }
+  }
+}

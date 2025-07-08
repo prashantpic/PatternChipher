@@ -1,0 +1,84 @@
+sequenceDiagram
+    actor "Developer" as devactor
+    participant "Version Control (GitHub)" as vcsgithub
+    participant "CICD-Pipelines (GitHub Actions)" as REPOPATTDEVOPS001
+    participant "Firebase/GCP Services" as cloudservices
+    participant "App/Play Store Services" as storeservices
+
+    devactor-vcsgithub: 1. Push code to feature branch
+    activate vcsgithub
+    vcsgithub--devactor: Push accepted
+    deactivate vcsgithub
+
+    devactor-vcsgithub: 2. Create Pull Request (PR)
+    activate vcsgithub
+    vcsgithub--devactor: PR created
+    deactivate vcsgithub
+
+    vcsgithub-REPOPATTDEVOPS001: 3. Trigger CI Workflow (Webhook on PR)
+    activate REPOPATTDEVOPS001
+    note over REPOPATTDEVOPS001: CI workflow is triggered to validate code quality before merging.
+
+    REPOPATTDEVOPS001-vcsgithub: 3.1 Checkout PR source code
+    activate vcsgithub
+    vcsgithub--REPOPATTDEVOPS001: Code checkout complete
+    deactivate vcsgithub
+
+    loop Run Unit & Integration Tests
+        REPOPATTDEVOPS001-REPOPATTDEVOPS001: 3.2 Run Unit & Integration Tests (NFR-QA-001)
+    end
+
+    REPOPATTDEVOPS001-REPOPATTDEVOPS001: 3.3 Run Static Code Analysis
+
+    alt Update PR status checks
+        REPOPATTDEVOPS001-vcsgithub: 3.4.1 [Success] Post 'Checks Passed' status
+        activate vcsgithub
+        vcsgithub--REPOPATTDEVOPS001: Status updated
+        deactivate vcsgithub
+    else Failure
+        REPOPATTDEVOPS001-vcsgithub: 3.4.2 [Failure] Post 'Checks Failed' status
+        activate vcsgithub
+        vcsgithub--REPOPATTDEVOPS001: Status updated
+        deactivate vcsgithub
+        REPOPATTDEVOPS001-devactor: 3.4.2.1 Notify of CI failure
+        activate devactor
+        deactivate devactor
+    end
+    deactivate REPOPATTDEVOPS001
+
+    devactor-vcsgithub: 4. Merge Pull Request (after successful checks)
+    activate vcsgithub
+    vcsgithub--devactor: PR merged
+    deactivate vcsgithub
+
+    vcsgithub-REPOPATTDEVOPS001: 5. Trigger CD Workflow (Webhook on push to release branch)
+    activate REPOPATTDEVOPS001
+    note over REPOPATTDEVOPS001: CD workflow is triggered after code is merged to a release-ready branch (e.g., main, develop, release/v1.1).
+
+    REPOPATTDEVOPS001-vcsgithub: 5.1 Checkout release branch code
+    activate vcsgithub
+    vcsgithub--REPOPATTDEVOPS001: Code checkout complete
+    deactivate vcsgithub
+
+    REPOPATTDEVOPS001-cloudservices: 5.2 Deploy Backend (REPO-PATT-008)
+    activate cloudservices
+    cloudservices--REPOPATTDEVOPS001: Backend deployment status
+    deactivate cloudservices
+
+    REPOPATTDEVOPS001-cloudservices: 5.3 Deploy Infrastructure (REPO-PATT-INFRA-001)
+    activate cloudservices
+    cloudservices--REPOPATTDEVOPS001: Infrastructure deployment status
+    deactivate cloudservices
+
+    REPOPATTDEVOPS001-REPOPATTDEVOPS001: 5.4 Build Client Application (REPO-PATT-001)
+
+    REPOPATTDEVOPS001-storeservices: 5.5 Upload artifacts to staging/internal tracks
+    activate storeservices
+    storeservices--REPOPATTDEVOPS001: Upload complete
+    deactivate storeservices
+
+    REPOPATTDEVOPS001-devactor: 5.6 Notify of successful deployment
+    activate devactor
+    deactivate devactor
+
+    deactivate REPOPATTDEVOPS_001

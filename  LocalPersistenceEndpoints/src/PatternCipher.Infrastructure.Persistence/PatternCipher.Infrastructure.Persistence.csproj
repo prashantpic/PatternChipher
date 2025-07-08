@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <RootNamespace>PatternCipher.Infrastructure.Persistence</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- 
+    Assuming a shared kernel/domain project exists for models like PlayerProfile.
+    If it's in a different location, this path would need to be adjusted.
+  -->
+  <!-- 
+  <ItemGroup>
+    <ProjectReference Include="..\PatternCipher.Shared\PatternCipher.Shared.csproj" />
+  </ItemGroup>
+  -->
+
+</Project>

@@ -1,0 +1,78 @@
+sequenceDiagram
+    actor "User" as User
+    participant "GameClientApplication" as REPO-PATT-001
+    participant "LocalPersistenceEndpoints" as REPO-PATT-004
+    participant "BackendServiceFacade" as REPO-PATT-005
+    participant "AuthenticationServiceEndpoints" as REPO-PATT-006
+    participant "CloudDataEndpoints" as REPO-PATT-007
+
+    User-REPO-PATT-001: 1. Clicks 'Enable Cloud Save'
+    activate REPO-PATT-001
+    REPO-PATT-001-REPO-PATT-005: 2. signInAndSync(provider: 'Google/Apple')
+    activate REPO-PATT-005
+
+    REPO-PATT-005-REPO-PATT-006: 2.1. signInWithProvider()
+    activate REPO-PATT-006
+    note over REPO-PATT-005: User is prompted to choose an auth provider (Google/Apple). The interaction with the provider's native UI is abstracted.
+    REPO-PATT-006--REPO-PATT-005: return userCredential(firebaseUid)
+    deactivate REPO-PATT-006
+
+    REPO-PATT-005-REPO-PATT-007: 2.2. getCloudProfile(firebaseUid)
+    activate REPO-PATT-007
+    REPO-PATT-007--REPO-PATT-005: return cloudProfileSnapshot
+    deactivate REPO-PATT-007
+
+    REPO-PATT-005-REPO-PATT-001: 2.3. requestLocalProfile()
+    REPO-PATT-001-REPO-PATT-004: 2.3.1. load()
+    activate REPO-PATT-004
+    REPO-PATT-004--REPO-PATT-001: return localProfileData
+    deactivate REPO-PATT-004
+    REPO-PATT-001--REPO-PATT-005: return localProfile
+
+    alt [Condition] Resolve sync based on cloud data existence
+        alt Case 1: No cloud data exists (cloudProfileSnapshot is empty)
+            REPO-PATT-005-REPO-PATT-007: 2.4.1.1. createCloudProfile(firebaseUid, localProfile)
+            activate REPO-PATT-007
+            REPO-PATT-007--REPO-PATT-005: return success
+            deactivate REPO-PATT-007
+        else Case 2: Cloud data exists
+            note over REPO-PATT-005: Conflict resolution logic is based on 'last-write-wins' using a server timestamp, as per DM-006. User may be prompted for complex conflicts, but this shows the automated path.
+            alt Compare local and cloud timestamps (last-write-wins)
+                alt Sub-Case 2a: Cloud data is newer
+                    REPO-PATT-005-REPO-PATT-001: 2.4.2.1.1.1. overwriteLocalProfile(cloudProfile.data)
+                    REPO-PATT-001-REPO-PATT-004: 2.4.2.1.1.1.1. save(cloudProfile.data)
+                    activate REPO-PATT-004
+                    REPO-PATT-004--REPO-PATT-001: return success
+                    deactivate REPO-PATT-004
+                    REPO-PATT-001--REPO-PATT-005: return success
+                else Sub-Case 2b: Local data is newer
+                    REPO-PATT-005-REPO-PATT-007: 2.4.2.1.2.1. updateCloudProfile(firebaseUid, localProfile)
+                    activate REPO-PATT-007
+                    REPO-PATT-007--REPO-PATT-005: return success
+                    deactivate REPO-PATT-007
+            end
+    end
+
+    REPO-PATT-005--REPO-PATT-001: return syncComplete() or syncFailed()
+    deactivate REPO-PATT-005
+
+    REPO-PATT-001--User: 3. Display sync status ('Enabled', 'Synced from Cloud', etc.)
+    deactivate REPO-PATT-001
+
+    loop For each subsequent level completion
+        User-REPO-PATT-001: 4.1. Completes a level
+        activate REPO-PATT-001
+        REPO-PATT-001-REPO-PATT-004: 4.2. save(updatedProfileData)
+        activate REPO-PATT-004
+        REPO-PATT-004--REPO-PATT-001: return success
+        deactivate REPO-PATT-004
+        note over REPO-PATT-001: Syncing progress after a level is an asynchronous background task. It does not block the UI.
+        REPO-PATT-001-REPO-PATT-005: 4.3. syncProgress(updatedProfileData)
+        activate REPO-PATT-005
+        REPO-PATT-005-REPO-PATT-007: 4.3.1. updateCloudProfile(firebaseUid, updatedProfileData)
+        activate REPO-PATT-007
+        REPO-PATT-007--REPO-PATT-005: return success
+        deactivate REPO-PATT-007
+        deactivate REPO-PATT-005
+        deactivate REPO-PATT-001
+    end

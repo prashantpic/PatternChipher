@@ -1,0 +1,20 @@
+{
+    "name": "PatternCipher.Client",
+    "rootNamespace": "PatternCipher.Client",
+    "references": [
+        "PatternCipher.Domain",
+        "PatternCipher.Presentation",
+        "PatternCipher.Infrastructure.Persistence",
+        "PatternCipher.Infrastructure.Firebase",
+        "PatternCipher.Shared"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

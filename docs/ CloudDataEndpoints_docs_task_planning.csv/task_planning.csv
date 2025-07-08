@@ -1,0 +1,110 @@
+Title,Description,Type,Status,Priority,Assignee,Reporter,Due Date,Estimate,Labels,Sprint,Epic,Project,Attachments,Comments,Parent ID,Dependencies,Created At,Updated At,Skills Required
+"Create UserProfile.md Schema Document","Description: Author the markdown file `schemas/UserProfile.md` that formally documents the UserProfile data model. This includes creating a table with all fields, data types, required status, and descriptions as specified in SDS Section 3, ensuring accuracy for nested objects.
+---
+Acceptance Criteria:
+1. The file `firebase/firestore/data/schemas/UserProfile.md` is created and committed.
+2. The document contains a table-based schema for the `UserProfile` collection.
+3. All fields from the SDS, including nested ones like `bgm_volume` and `stars_earned`, are present and correctly documented.
+4. The document has been peer-reviewed by another developer for clarity and accuracy against the SDS.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",3.2,"documentation,schema,firestore","Sprint 1","EPIC-CDS-001","CloudDataEndpoints Implementation","firebase/firestore/data/schemas/UserProfile.md","","US-001","",,,"Markdown,Data Modeling,Technical Writing"
+"Create Placeholder firestore.indexes.json","Description: Create the `firestore.indexes.json` file with the required empty structure and a commented-out example to serve as a template for future use.
+---
+Acceptance Criteria:
+1. The file `firebase/firestore/data/firestore.indexes.json` is created and is valid JSON.
+2. The file contains an `indexes` array and a `fieldOverrides` array.
+3. A commented-out example of a composite index is included within the `indexes` array.","Task","Backlog","Should Have","backend-dev@project.com","pm@project.com","",1.2,"configuration,firestore,database","Sprint 1","EPIC-CDS-001","CloudDataEndpoints Implementation","firebase/firestore/data/firestore.indexes.json","","US-003","",,,"JSON,Firestore"
+"Document Backup and Recovery Policy","Description: Create the `backups/backup_policy.md` file, detailing the strategy using Firestore PITR, defining the RPO/RTO, and outlining the high-level recovery procedure and validation requirements.
+---
+Acceptance Criteria:
+1. The file `firebase/firestore/data/backups/backup_policy.md` is created.
+2. The document explicitly states the use of PITR, an RPO of 24 hours, and an RTO of 4 hours.
+3. A high-level 5-step recovery process is documented.
+4. A mandate for semi-annual recovery drills is included.","Task","Backlog","Should Have","devops-eng@project.com","pm@project.com","",3.2,"documentation,policy,devops,backup","Sprint 1","EPIC-CDS-002","CloudDataEndpoints Implementation","firebase/firestore/data/backups/backup_policy.md","","US-004","",,,"Technical Writing,GCP/Firebase"
+"Document Cloud Save Sync Triggers","Description: Create the `strategies/SyncTriggers.md` file. The document must define all automatic (app pause, level complete) and manual ('Sync Now' button) triggers, and include recommendations for efficiency.
+---
+Acceptance Criteria:
+1. The file `firebase/firestore/data/strategies/SyncTriggers.md` is created.
+2. Automatic triggers for 'Application Pause/Quit', 'Significant Progress', and 'After Level Completion' are listed.
+3. A manual 'Sync Now' button with UI feedback is specified.
+4. An efficiency note about checking for local data changes before syncing is included.","Task","Backlog","Should Have","backend-dev@project.com","pm@project.com","",3.3,"documentation,strategy,cloud-save","Sprint 1","EPIC-CDS-002","CloudDataEndpoints Implementation","firebase/firestore/data/strategies/SyncTriggers.md","","US-006","",,,"Technical Writing,Game Design"
+"Draft firestore.rules for User Data Isolation","Description: Create the `firestore.rules` file and implement the basic access control rules. This task focuses on ensuring a user can only perform read, update, and delete operations on their own document, identified by `request.auth.uid == userId`.
+---
+Acceptance Criteria:
+1. The file `firestore.rules` is created with `rules_version = '2'`.
+2. A `match /userProfiles/{userId}` block is implemented.
+3. `allow read, update, delete` rules are correctly conditioned on `request.auth.uid == userId`.
+4. Placeholder `allow create` rule is in place.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",4.2,"security,firestore,backend","Sprint 1","EPIC-CDS-001","CloudDataEndpoints Implementation","Initial version of firebase/firestore/data/firestore.rules","","US-002","TASK-001",,,"Firestore Security Rules Language"
+"Document Conflict Resolution Strategy","Description: Create the `strategies/ConflictResolution.md` file. The document must clearly specify the 'Last Write Wins' strategy based on the server timestamp and detail the client-side flows for both regular writes and initial sync on a new device.
+---
+Acceptance Criteria:
+1. The file `firebase/firestore/data/strategies/ConflictResolution.md` is created.
+2. 'Last Write Wins' using `timestamp_of_last_cloud_sync` is defined as the primary strategy.
+3. The client-side read-before-write flow is explicitly documented.
+4. The user-prompt flow for initial sync conflicts is detailed with examples of metrics to display.","Task","Backlog","Should Have","backend-dev@project.com","pm@project.com","",4.2,"documentation,strategy,cloud-save","Sprint 1","EPIC-CDS-002","CloudDataEndpoints Implementation","firebase/firestore/data/strategies/ConflictResolution.md","","US-005","TASK-001",,,"Technical Writing,System Design"
+"Implement Schema Validation Function in Rules","Description: Implement the `validateUserProfileV1` helper function within `firestore.rules`. This function is responsible for deep validation of incoming data on `create` and `update` operations, checking all required fields, data types, and enforcing the use of `request.time` for the server timestamp.
+---
+Acceptance Criteria:
+1. A function `validateUserProfileV1` exists in `firestore.rules`.
+2. The function validates the presence and type of all required top-level and nested fields from the UserProfile schema.
+3. The function validates that `request.resource.data.timestamp_of_last_cloud_sync == request.time`.
+4. The `allow create` and `allow update` rules correctly call this validation function.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",6.3,"security,firestore,backend,validation","Sprint 1","EPIC-CDS-001","CloudDataEndpoints Implementation","Updated firebase/firestore/data/firestore.rules with validation logic.","","US-002","TASK-002",,,"Firestore Security Rules Language"
+"Finalize Rules with Global Denies","Description: Complete the `firestore.rules` file by adding critical global deny rules. This includes explicitly denying `list` access to the `userProfiles` collection to prevent user enumeration and adding a catch-all rule to deny access to any other undefined paths.
+---
+Acceptance Criteria:
+1. The `userProfiles` match block contains `allow list: if false;`.
+2. A global `match /{document=**}` block exists at the end of the file that denies all read and write operations.
+3. The ruleset is reviewed for completeness.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",2,"security,firestore,backend","Sprint 1","EPIC-CDS-001","CloudDataEndpoints Implementation","Completed firebase/firestore/data/firestore.rules file.","","US-002","TASK-003",,,"Firestore Security Rules Language"
+"Setup Node.js Project with Firebase Emulator and Jest","Description: Initialize a Node.js project for testing. Install and configure the Firebase Emulator Suite, Jest, TypeScript, and the `@firebase/rules-unit-testing` library. Create necessary configuration files (`firebase.json`, `jest.config.js`).
+---
+Acceptance Criteria:
+1. A `package.json` exists with all required dev dependencies installed.
+2. `firebase.json` is configured to point to the `firestore.rules` file and define an emulator port.
+3. An `npm` script exists (e.g., `npm run test`) that can start the emulator and run a sample test file.
+4. The sample test successfully connects to the local emulated Firestore instance.","Task","Backlog","Critical","devops-eng@project.com","pm@project.com","",5.2,"testing,devops,setup,firebase","Sprint 1","EPIC-CDS-003","CloudDataEndpoints Implementation","package.json, firebase.json, jest.config.js, tsconfig.json, Sample test file","","US-007","TASK-004",,,"Firebase Emulator Suite,Jest,npm/yarn,TypeScript"
+"Develop Test Helpers and Mock Data","Description: Create a test helper module that provides functions for initializing the test database, creating authenticated/unauthenticated contexts, and generating valid/invalid UserProfile mock data objects.
+---
+Acceptance Criteria:
+1. A test helper file is created.
+2. A function exists to get a Firestore instance for an authenticated user (`getAuthedFirestore(auth)`).
+3. A function exists to generate a valid UserProfile object.
+4. Functions exist to generate invalid UserProfile objects (e.g., missing required field, wrong data type).","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",4,"testing,firestore","Sprint 1","EPIC-CDS-003","CloudDataEndpoints Implementation","Test helper/utility file (e.g., `firestore.test.helpers.ts`)","","US-008","TASK-009",,,"Jest,TypeScript"
+"Implement Tests for Read/Delete and Data Isolation","Description: Write Jest tests to verify read and delete permissions. This includes asserting that an authenticated user can read/delete their own data, but is denied when attempting to access another user's data. Also tests unauthenticated access.
+---
+Acceptance Criteria:
+1. Test case for `allow read: if request.auth.uid == userId` passes for owner, fails for others.
+2. Test case for `allow delete: if request.auth.uid == userId` passes for owner, fails for others.
+3. Test case for unauthenticated read/delete fails.
+4. Test case for `allow list: if false` fails for all users.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",4.2,"testing,firestore,security","Sprint 1","EPIC-CDS-003","CloudDataEndpoints Implementation","A portion of the `firestore.rules.test.ts` file.","","US-008","TASK-010",,,"Jest,TypeScript,Firestore Security Rules"
+"Implement Tests for Create Operation and Validation","Description: Write Jest tests specifically for the `create` operation. This includes asserting a successful `create` with valid data and asserting failures for various invalid data payloads (missing fields, wrong types, client timestamp).
+---
+Acceptance Criteria:
+1. Test case for a successful `create` with a valid UserProfile object passes.
+2. Test case for `create` with a missing required field (e.g., `user_profile_schema_version`) fails.
+3. Test case for `create` with an incorrect data type (e.g., `unlocked_features` as a map) fails.
+4. Test case for `create` where `timestamp_of_last_cloud_sync` is not a server timestamp fails.
+5. Test case for `create` by an unauthenticated user fails.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",6.2,"testing,firestore,security,validation","Sprint 1","EPIC-CDS-003","CloudDataEndpoints Implementation","A portion of the `firestore.rules.test.ts` file covering create operations.","","US-008","TASK-010",,,"Jest,TypeScript,Firestore Security Rules"
+"Implement Tests for Update Operation and Validation","Description: Write Jest tests specifically for the `update` operation. This covers the same validation logic as `create` but in the context of an existing document.
+---
+Acceptance Criteria:
+1. Test case for a successful `update` with a valid UserProfile object passes.
+2. Test case for `update` that attempts to write an invalid schema (e.g., nulling a required field) fails.
+3. Test case for `update` where a user tries to update another user's document fails.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",5,"testing,firestore,security,validation","Sprint 1","EPIC-CDS-003","CloudDataEndpoints Implementation","A portion of the `firestore.rules.test.ts` file covering update operations.","","US-008","TASK-010",,,"Jest,TypeScript,Firestore Security Rules"
+"Finalize Test Suite and Measure Coverage","Description: Review all tests for completeness, refactor for clarity, and configure Jest to generate a coverage report. Ensure the overall test coverage for `firestore.rules` meets the project standard of >90%.
+---
+Acceptance Criteria:
+1. All tests are organized and passing.
+2. The command `npm run test -- --coverage` executes and generates a report.
+3. The coverage report shows that `firestore.rules` has a statement coverage of >90%.","Task","Backlog","Critical","backend-dev@project.com","pm@project.com","",3.2,"testing,firestore,quality","Sprint 2","EPIC-CDS-003","CloudDataEndpoints Implementation","Final `firestore.rules.test.ts` file.,Updated `jest.config.js` for coverage collection.","","US-008","TASK-011,TASK-012,TASK-013",,,"Jest"
+"Configure GitHub Actions Workflow for Testing","Description: Create a GitHub Actions workflow file that triggers on push/pull_request. The workflow must define a 'Test' job that checks out the code, sets up Node.js, installs dependencies, and runs the `npm test` script (which includes starting the emulator).
+---
+Acceptance Criteria:
+1. A file `.github/workflows/deploy.yml` is created.
+2. The workflow successfully runs on a pull request.
+3. The 'Test' job completes and correctly reports success or failure based on the Jest test results.","Task","Backlog","Should Have","devops-eng@project.com","pm@project.com","",6.3,"ci-cd,devops,github-actions,testing","Sprint 2","EPIC-CDS-003","CloudDataEndpoints Implementation","Partial `.github/workflows/deploy.yml` file with the Test job.","","US-009","TASK-014",,,"CI/CD (GitHub Actions),YAML"
+"Add Staging Deployment Job to CI/CD Workflow","Description: Extend the GitHub Actions workflow with a 'Deploy' job. This job must only run on pushes to the `main` branch and must depend on the successful completion of the 'Test' job. It will use a Firebase service account (stored in GitHub Secrets) to deploy `firestore.rules` and `firestore.indexes.json` to the staging project.
+---
+Acceptance Criteria:
+1. A 'Deploy' job is added to the workflow file.
+2. The job has a `needs: test` dependency.
+3. The job has a condition to only run on `if: github.ref == 'refs/heads/main' && github.event_name == 'push'`.
+4. The job successfully uses `firebase-tools` to deploy to the staging environment.
+5. Firebase credentials are not hardcoded and are loaded from GitHub Secrets.","Task","Backlog","Should Have","devops-eng@project.com","pm@project.com","",8.5,"ci-cd,devops,github-actions,deployment","Sprint 2","EPIC-CDS-003","CloudDataEndpoints Implementation","Completed `.github/workflows/deploy.yml` file.","","US-009","TASK-015",,,"CI/CD (GitHub Actions),YAML,Firebase CLI"

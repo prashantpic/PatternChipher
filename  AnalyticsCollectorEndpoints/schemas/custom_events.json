@@ -1,0 +1,75 @@
+[
+  {
+    "eventName": "level_start",
+    "description": "Fired when a player begins a level attempt.",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "Unique identifier for the procedurally generated level." },
+      { "paramName": "puzzle_type", "dataType": "string", "description": "The type of puzzle (e.g., 'DirectMatch', 'RuleBased')." },
+      { "paramName": "difficulty_tier", "dataType": "long", "description": "The numerical difficulty tier of the level." }
+    ]
+  },
+  {
+    "eventName": "level_complete",
+    "description": "Fired when a player successfully completes a level.",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "Unique identifier for the procedurally generated level." },
+      { "paramName": "moves_taken", "dataType": "long", "description": "Number of moves the player took to complete the level." },
+      { "paramName": "time_taken_seconds", "dataType": "long", "description": "Time in seconds the player took to complete the level." },
+      { "paramName": "par_moves", "dataType": "long", "description": "The target 'par' move count for the level." },
+      { "paramName": "score_achieved", "dataType": "long", "description": "The final score for the level." },
+      { "paramName": "stars_earned", "dataType": "long", "description": "Number of stars earned (1-3)." }
+    ]
+  },
+  {
+    "eventName": "level_fail",
+    "description": "Fired when a player fails a level (e.g., runs out of moves/time).",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "Unique identifier for the procedurally generated level." },
+      { "paramName": "moves_taken", "dataType": "long", "description": "Number of moves the player had made before failing." },
+      { "paramName": "time_taken_seconds", "dataType": "long", "description": "Time in seconds elapsed before failing." },
+      { "paramName": "fail_reason", "dataType": "string", "description": "Reason for failure (e.g., 'out_of_moves', 'timeout')." }
+    ]
+  },
+  {
+    "eventName": "level_quit",
+    "description": "Fired when a player manually quits a level before completion.",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "Unique identifier for the procedurally generated level." },
+      { "paramName": "moves_taken", "dataType": "long", "description": "Number of moves made before quitting." },
+      { "paramName": "time_in_level_seconds", "dataType": "long", "description": "Time in seconds spent in the level before quitting." }
+    ]
+  },
+  {
+    "eventName": "hint_used",
+    "description": "Fired when a player uses a hint.",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "The level in which the hint was used." },
+      { "paramName": "moves_at_hint", "dataType": "long", "description": "The move count when the hint was used." }
+    ]
+  },
+  {
+    "eventName": "undo_used",
+    "description": "Fired when a player uses the undo action.",
+    "parameters": [
+      { "paramName": "level_id", "dataType": "string", "description": "The level in which undo was used." },
+      { "paramName": "moves_at_undo", "dataType": "long", "description": "The move count when undo was used." }
+    ]
+  },
+  {
+    "eventName": "setting_changed",
+    "description": "Fired when a player changes a game setting.",
+    "parameters": [
+      { "paramName": "setting_name", "dataType": "string", "description": "The name of the setting changed (e.g., 'music_volume', 'sfx_volume', 'colorblind_mode')." },
+      { "paramName": "setting_value", "dataType": "string", "description": "The new value of the setting." }
+    ]
+  },
+  {
+    "eventName": "tutorial_step",
+    "description": "Fired for each interaction with the tutorial.",
+    "parameters": [
+      { "paramName": "tutorial_id", "dataType": "string", "description": "Identifier for the tutorial being shown (e.g., 'core_swap_mechanic')." },
+      { "paramName": "step_index", "dataType": "long", "description": "The index of the tutorial step." },
+      { "paramName": "status", "dataType": "string", "description": "Status of the step ('started', 'completed', 'skipped')." }
+    ]
+  }
+]

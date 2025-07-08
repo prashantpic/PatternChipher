@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Deny all access by default to enforce the principle of least privilege.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User profiles: Users can read and update their own profile, and create one.
+    // No one can delete a user profile via client SDKs.
+    match /userProfiles/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Leaderboards: Any authenticated user can read leaderboards.
+    // Writes are only allowed from server-side code (Cloud Functions) via the Admin SDK.
+    match /leaderboards/{leaderboardId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Deny client-side writes.
+    }
+
+    // Achievements: Users can only read their own achievement status.
+    // Writes are only allowed from the server to prevent cheating.
+    match /userProfiles/{userId}/achievements/{achievementId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Deny client-side writes.
+    }
+  }
+}

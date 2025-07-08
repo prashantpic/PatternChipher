@@ -1,0 +1,43 @@
+# Pattern Cipher - Firebase Analytics Configuration
+# REQ-8-001, FR-AT-001, FR-AT-002
+
+# Data Retention Settings
+# Specifies how long user-level data (including user properties) is retained.
+# Complies with data minimization principles.
+data_retention:
+  user_data_months: 14 # Standard Firebase setting, balances long-term analysis with privacy.
+  event_data_months: 14 # Retention for event data.
+
+# BigQuery Integration Configuration
+# For advanced analysis and long-term storage of anonymized/aggregated data.
+# REQ-8-005, FR-B-006
+bigquery_export:
+  enabled: true
+  project_id: "pattern-cipher-prod" # To be replaced with the actual GCP project ID.
+  dataset_name: "patterncipher_analytics_v1"
+  # Daily export is standard. Streaming export can be enabled for real-time needs if required.
+  export_frequency: "daily"
+
+# Default Consent Management Settings
+# Defines the default analytics consent state for different regions.
+# The client will use this as a fallback and for initial state determination.
+# REQ-11-005, FR-AT-002
+default_consent_settings:
+  # 'ad_storage' and 'analytics_storage' are standard keys used by Firebase.
+  - region: "DEFAULT"
+    ad_storage: "denied"
+    analytics_storage: "denied"
+  - region: "GDPR" # European Economic Area, UK
+    ad_storage: "denied"
+    analytics_storage: "denied"
+  - region: "CCPA" # California, USA
+    ad_storage: "denied"
+    analytics_storage: "granted"
+
+# COPPA/Child-Directed Treatment
+# Global setting to ensure all SDK behavior is compliant for users identified as children.
+# REQ-11-002, REQ-11-004
+child_directed_treatment:
+  # This flag must be set dynamically on the client-side SDK initialization
+  # based on the age gate result, but is documented here as a core policy.
+  description: "If the user is identified as being under the age of digital consent, all analytics and ad calls must be flagged as child-directed. This disables collection of advertising IDs and other PII."

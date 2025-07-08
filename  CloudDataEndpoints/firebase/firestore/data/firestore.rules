@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- User Profiles Collection ---
+    // Documents are keyed by the user's Firebase Auth UID.
+    match /userProfiles/{userId} {
+
+      // HELPER FUNCTION: Schema Validation for UserProfile v1.0
+      function validateUserProfileV1(data) {
+        return data.user_profile_schema_version == "1.0"
+          && data.cloud_save_data_object_version is string
+          && data.cloud_save_data_object is map
+          && data.cloud_save_data_object.player_settings is map
+          && data.cloud_save_data_object.level_completion_status is map
+          && data.cloud_save_data_object.unlocked_features is list
+          && request.time == data.timestamp_of_last_cloud_sync; // Enforce server timestamp
+      }
+
+      // --- PERMISSIONS ---
+
+      // READ: A user can only read their own profile document.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // CREATE: A user can only create their own profile document.
+      // The write must conform to the defined schema.
+      allow create: if request.auth != null && request.auth.uid == userId
+                      && validateUserProfileV1(request.resource.data);
+
+      // UPDATE: A user can only update their own profile document.
+      // The write must conform to the defined schema.
+      allow update: if request.auth != null && request.auth.uid == userId
+                      && validateUserProfileV1(request.resource.data);
+
+      // DELETE: A user can only delete their own profile document.
+      // This supports GDPR/CCPA data deletion requests.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // DENY global list access to the collection.
+      // This prevents users from discovering other user IDs.
+      allow list: if false;
+    }
+
+    // --- Default Deny ---
+    // Deny access to any other collections not explicitly defined.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

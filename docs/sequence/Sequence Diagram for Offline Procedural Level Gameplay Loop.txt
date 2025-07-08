@@ -1,0 +1,62 @@
+sequenceDiagram
+    actor "Player" as PLAYER
+    participant "UI/Presentation Layer" as REPOPATT003
+    participant "Application/Controller Layer" as REPOPATT001
+    participant "Domain Logic Layer" as REPOPATT002
+    participant "Local Persistence Service" as REPOPATT004
+
+    PLAYER-REPOPATT003: 1. Selects a level
+    activate REPOPATT003
+    REPOPATT003-REPOPATT001: 2. requestNewLevel(levelConfig)
+    activate REPOPATT001
+    REPOPATT001-REPOPATT002: 3. generateLevel(levelConfig)
+    activate REPOPATT002
+    REPOPATT002-REPOPATT002: 3.1. procedurallyGeneratePuzzle()
+    REPOPATT002--REPOPATT002: candidatePuzzle
+    REPOPATT002-REPOPATT002: 3.2. verifySolvabilityAndGetPar(candidatePuzzle)
+    note right of REPOPATT002: Solver logic guarantees every generated puzzle is solvable and calculates 'par' moves. (FR-L-001, NFR-R-003, FR-S-002)
+    REPOPATT002--REPOPATT002: { isSolvable: true, parMoves }
+    REPOPATT002--REPOPATT001: levelData { grid, goal, parMoves }
+    deactivate REPOPATT002
+    REPOPATT001-REPOPATT003: 4. displayLevel(levelData)
+    deactivate REPOPATT001
+
+    loop Win condition not met
+        note over PLAYER: The loop continues as long as the win condition is not met.
+        PLAYER-REPOPATT003: 5.1. Performs a move (e.g., swaps two tiles)
+        REPOPATT003-REPOPATT001: 5.2. processMove(moveData)
+        activate REPOPATT001
+        REPOPATT001-REPOPATT002: 5.3. validateAndUpdate(moveData)
+        activate REPOPATT002
+        REPOPATT002--REPOPATT001: { isValid, updatedGridState }
+        deactivate REPOPATT002
+        
+        alt isValid
+            REPOPATT001-REPOPATT003: 5.4.1. [isValid] updateView(updatedGridState)
+            REPOPATT001-REPOPATT002: 5.4.2. [isValid] checkWinCondition()
+            activate REPOPATT002
+            REPOPATT002--REPOPATT001: { isComplete }
+            deactivate REPOPATT002
+        else !isValid
+            REPOPATT001-REPOPATT003: 5.4.3. [!isValid] showInvalidMoveFeedback()
+        end
+        deactivate REPOPATT001
+    end
+
+    activate REPOPATT001
+    REPOPATT001-REPOPATT002: 6. calculateFinalScore(moves, time)
+    activate REPOPATT002
+    REPOPATT002--REPOPATT001: scoreData { score, stars }
+    deactivate REPOPATT002
+    
+    REPOPATT001-REPOPATT003: 7. showLevelCompleteScreen(scoreData)
+    
+    note left of REPOPATT001: Saving player progress is an asynchronous operation that does not block the UI thread. (DM-001, NFR-R-002)
+    REPOPATT001-REPOPATT004: 8. savePlayerProgress(updatedProgress)
+    activate REPOPATT004
+    REPOPATT004-REPOPATT004: 8.1. Serialize progress to JSON and write to file
+    REPOPATT004--REPOPATT001: saveCompleted()
+    deactivate REPOPATT004
+    
+    deactivate REPOPATT001
+    deactivate REPOPATT003

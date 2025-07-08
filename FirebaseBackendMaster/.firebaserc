@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "pattern-cipher-dev",
+    "staging": "pattern-cipher-staging",
+    "production": "pattern-cipher-prod"
+  }
+}

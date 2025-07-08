@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor "GameClientApplication" as REPOPATT001
+    participant "LocalPersistenceEndpoints" as REPOPATT004
+
+    REPOPATT001-REPOPATT004: 1. LoadPlayerProfile()
+    activate REPOPATT004
+    note over REPOPATT001: This entire process is synchronous from the client's perspective to ensure the profile is fully loaded and migrated before the game starts.
+
+    REPOPATT004-REPOPATT004: 1.1 ReadRawSaveFile("playerProfile.dat")
+    REPOPATT004-REPOPATT004: 1.2 DetectSchemaVersion(rawJsonData)
+
+    alt 1.3 Save file version check
+        REPOPATT004-REPOPATT004: 1.3.1 [detectedVersion < CURRENT_VERSION]
+        
+        REPOPATT004-REPOPATT004: 1.3.1.1 CreateBackup("playerProfile.dat.bak")
+        REPOPATT004-REPOPATT004: 1.3.1.2 ExecuteMigrationScripts(rawJsonData, detectedVersion)
+        
+        alt 1.3.1.2.1 Migration Outcome
+            REPOPATT004-REPOPATT004: 1.3.1.2.1.1 [Migration Successful]
+            REPOPATT004-REPOPATT004: 1.3.1.2.1.1.1 SerializeAndSaveNewProfile(migratedProfileObject)
+        else 1.3.1.2.1.2 [else Migration Failed]
+            REPOPATT004-REPOPATT004: 1.3.1.2.1.2.1 LogError("Data migration failed.")
+            REPOPATT004-REPOPATT004: 1.3.1.2.1.2.2 RestoreFromBackup("playerProfile.dat.bak")
+            REPOPATT004--REPOPATT001: 1.3.1.2.1.2.3 throw MigrationFailedException
+            note right of REPOPATT001: The client must catch the MigrationFailedException and notify the user, offering options like resetting progress or contacting support, as per DM-004.
+        end
+
+    else 1.3.2 [else]
+        REPOPATT004-REPOPATT004: 1.3.2.1 DeserializeCurrentProfile(rawJsonData)
+    end
+    
+    REPOPATT004--REPOPATT001: 1.4 Return PlayerProfile object
+    deactivate REPOPATT004

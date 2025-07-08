@@ -1,0 +1,206 @@
+Title,Description,Type,Status,Priority,Assignee,Reporter,Due Date,Estimate,Labels,Sprint,Epic,Project,Attachments,Comments,Parent ID,Dependencies,Created At,Updated At,Skills Required
+"EPIC-LBS-01: Project Scaffolding and Core Configuration","Establish the foundational project structure, security rules, database indexes, and core configurations necessary to begin development of the Leaderboard Service.",Epic,Backlog,Critical,product-owner@project.com,pm@project.com,,0,"config,security,database,setup","","Leaderboard Service Backend",,,,,,,
+"US-LBS-001: Set Up Initial Project and Configuration","As a Developer, I want to establish the basic project structure with dependency management and centralized constants, so that I have a clean, maintainable foundation for building the service.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,2.5,"setup,config","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend",,"- Given the project is checked out, When I run `npm install`, Then all dependencies and devDependencies from `package.json` are installed without errors.
+- Given the project is set up, When I inspect the `src/config/constants.ts` file, Then it exports the `FIRESTORE_COLLECTIONS`, `SCORE_VALIDATION_RULES`, and `RATE_LIMIT_CONFIG` objects.
+- Given the project is checked out, When I run `npm run build`, Then the TypeScript code is successfully transpiled into the `lib` directory without errors.","EPIC-LBS-01",,,"2024-05-01 09:00:00","2024-05-01 09:00:00",
+"[EPIC-LBS-01] TASK-LBS-001: Create and configure package.json with dependencies and scripts","Initialize an npm project and populate the `package.json` file with all required dependencies, devDependencies, and npm scripts (`build`, `serve`, `deploy`, `lint`) as specified in the SDS.
+
+**Acceptance Criteria:**
+- The `package.json` file is created and committed.
+- `npm install` runs successfully without errors.
+- All scripts are present and runnable.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,1.1,"setup,config,Configuration","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/package.json",,"US-LBS-001",,"2024-05-01 09:01:00","2024-05-01 09:01:00","npm,JSON"
+"[EPIC-LBS-01] TASK-LBS-002: Implement centralized configuration constants module","Create the `src/config/constants.ts` file to define and export `FIRESTORE_COLLECTIONS`, `SCORE_VALIDATION_RULES`, and `RATE_LIMIT_CONFIG` for application-wide use.
+
+**Acceptance Criteria:**
+- The file `src/config/constants.ts` is created.
+- All specified constant objects are exported correctly.
+- The file passes linting and TypeScript compilation.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,1.4,"config,code-structure,Backend","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/src/config/constants.ts",,"US-LBS-001","TASK-LBS-001","2024-05-01 09:02:00","2024-05-01 09:02:00","TypeScript"
+"US-LBS-002: Secure Leaderboard Data from Client-Side Tampering","As a Developer, I want to configure Firestore security rules so that players cannot write directly to the leaderboard, ensuring all scores are submitted through the validated server endpoint for fairness.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,4.5,"security,firestore","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend",,"- Given the Firestore security rules are deployed, When an unauthenticated or authenticated client attempts to read from the `/leaderboards/{any_doc}` path, Then the read operation is allowed.
+- Given the Firestore security rules are deployed, When a client attempts to perform a write operation (create, update, delete) on the `/leaderboards/{any_doc}` path, Then the write operation is denied.
+- Given a user is authenticated with a specific UID, When they attempt to create, read, or update the document at `/scoreSubmissions/{their_UID}`, Then the operation is allowed.","EPIC-LBS-01",,,"2024-05-01 09:03:00","2024-05-01 09:03:00",
+"[EPIC-LBS-01] TASK-LBS-003: Implement and configure Firestore security rules","Create and populate the `firestore.rules` file to deny all client-side writes to the `leaderboards` collection while allowing public reads. Also, configure rules for the `scoreSubmissions` collection to allow users to manage their own rate-limiting documents.
+
+**Acceptance Criteria:**
+- The `firestore.rules` file is committed.
+- Rules explicitly deny `write` on `/leaderboards/{id}`.
+- Rules explicitly allow `read` on `/leaderboards/{id}`.
+- Rules for `/scoreSubmissions/{userId}` allow `create`, `read`, `update` only if `request.auth.uid == userId`.
+- Rules are successfully deployed via Firebase CLI.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,4.5,"security,firestore,config,Security","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/firestore.rules",,"US-LBS-002",,"2024-05-01 09:04:00","2024-05-01 09:04:00","Firebase Security Rules"
+"US-LBS-003: Optimize Leaderboard Query Performance","As a Developer, I want to define composite indexes in Firestore so that client applications can query and sort leaderboards by score, moves, or time efficiently, providing a fast user experience.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,6.5,"database,performance","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend",,"- Given the Firestore indexes are deployed, When a query is made to the `leaderboards` collection filtering by `levelId` and sorting by `score` descending, Then the query executes successfully and efficiently.
+- Given the Firestore indexes are deployed, When a query is made to the `leaderboards` collection filtering by `levelId` and sorting by `moves` ascending, Then the query executes successfully and efficiently.
+- Given the Firestore indexes are deployed, When a query is made to the `leaderboards` collection filtering by `levelId` and sorting by `timeInSeconds` ascending, Then the query executes successfully and efficiently.","EPIC-LBS-01",,"TASK-LBS-001,TASK-LBS-007","2024-05-01 09:05:00","2024-05-01 09:05:00",
+"[EPIC-LBS-01] TASK-LBS-004: Define Firestore composite indexes for leaderboard queries","Create the `firestore.indexes.json` file and define the three required composite indexes for querying the `leaderboards` collection, sorting by score, moves, and time respectively.
+
+**Acceptance Criteria:**
+- The `firestore.indexes.json` file is committed.
+- Index for `levelId` (ASC) and `score` (DESC) is defined.
+- Index for `levelId` (ASC) and `moves` (ASC) is defined.
+- Index for `levelId` (ASC) and `timeInSeconds` (ASC) is defined.
+- Indexes are successfully deployed via Firebase CLI.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,2.2,"database,performance,config,Database","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/firestore.indexes.json",,"US-LBS-003",,"2024-05-01 09:06:00","2024-05-01 09:06:00","Firebase Firestore,JSON"
+"EPIC-LBS-02: Domain and Application Layer Implementation","Implement the core business logic, including data models, validation services, and application services that orchestrate the score submission use case.",Epic,Backlog,Critical,product-owner@project.com,pm@project.com,,0,"domain-logic,application-logic,business-rules","","Leaderboard Service Backend",,,,,,,
+"US-LBS-004: Define Data Contracts for Score Submission","As a Developer, I want to define the domain model for a leaderboard entry and the DTO for score submission, so that there is a clear, strongly-typed data contract for all parts of the application.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,3.7,"model,dto,validation","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend",,"- Given the domain model file, When I import `LeaderboardEntry`, Then it has all the required properties (`userId`, `userName`, `levelId`, `score`, `moves`, `timeInSeconds`, `submittedAt`).
+- Given the DTO file, When I import `SubmitScoreDto`, Then it has the properties `levelId`, `score`, `moves`, and `timeInSeconds`.
+- Given the DTO file and a valid score submission payload, When I validate the payload against the exported `submitScoreSchema` (Joi schema), Then the validation passes without error.","EPIC-LBS-02","US-LBS-001","2024-05-01 09:07:00","2024-05-01 09:07:00",
+"[EPIC-LBS-02] TASK-LBS-007: Define LeaderboardEntry domain model interface","Create the `src/domain/models/leaderboard-entry.model.ts` file and define the `LeaderboardEntry` TypeScript interface, ensuring all fields and types match the SDS specification.
+
+**Acceptance Criteria:**
+- The `LeaderboardEntry` interface is defined and exported.
+- All properties (`userId`, `userName`, etc.) and their types (`string`, `number`, `FieldValue`) are correct.
+- The `FieldValue` type is imported from `firebase-admin/firestore`.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,1,"model,domain,types,Backend","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/domain/models/leaderboard-entry.model.ts",,"US-LBS-004","TASK-LBS-001","2024-05-01 09:08:00","2024-05-01 09:08:00","TypeScript"
+"[EPIC-LBS-02] TASK-LBS-008: Define SubmitScore DTO and Joi validation schema","Create `src/application/dtos/submit-score.dto.ts` to define the `SubmitScoreDto` interface and the corresponding `submitScoreSchema` using the Joi library for runtime validation.
+
+**Acceptance Criteria:**
+- The `SubmitScoreDto` interface is defined and exported.
+- The `submitScoreSchema` Joi object is defined and exported.
+- The Joi schema requires `levelId`, `score`, `moves`, and `timeInSeconds`.
+- The schema enforces correct types (string, integer) and minimum values.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,2.7,"dto,validation,api-contract,Backend","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/application/dtos/submit-score.dto.ts",,"US-LBS-004","TASK-LBS-001","2024-05-01 09:09:00","2024-05-01 09:09:00","TypeScript,Joi"
+"US-LBS-005: Implement Server-Side Score Plausibility Checks","As a Developer, I want to implement a domain service that validates if a score is plausible, so that obviously cheated or bugged scores are rejected before they are saved to the leaderboard.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,7.3,"domain-service,validation,business-logic","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend",,"- Given a `ScoreValidatorService` instance, When `isPlausible()` is called with a score, moves, and time that are all within the ranges defined in `constants.ts`, Then the method returns `true`.
+- Given a `ScoreValidatorService` instance, When `isPlausible()` is called with a score that is higher than `MAX_SCORE`, Then the method returns `false`.
+- Given a `ScoreValidatorService` instance, When `isPlausible()` is called with a time in seconds that is lower than `MIN_TIME_SECONDS`, Then the method returns `false`.","EPIC-LBS-02","US-LBS-001,US-LBS-004","2024-05-01 09:10:00","2024-05-01 09:10:00",
+"[EPIC-LBS-02] TASK-LBS-009: Implement ScoreValidator domain service","Create the `ScoreValidatorService` class in `src/domain/services/score-validator.service.ts`. Implement the `isPlausible` method to check a score submission against the business rules defined in `constants.ts`.
+
+**Acceptance Criteria:**
+- The `ScoreValidatorService` class is created.
+- The `isPlausible` method correctly uses `SCORE_VALIDATION_RULES` from the constants module.
+- The method returns `true` for plausible scores and `false` for implausible ones.
+- The logic handles checks for score, moves, and time.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,2.7,"domain-service,business-logic,validation,DomainLogic","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/domain/services/score-validator.service.ts",,"US-LBS-005","TASK-LBS-002,TASK-LBS-008","2024-05-01 09:11:00","2024-05-01 09:11:00","TypeScript"
+"US-LBS-010: Ensure Core Logic Correctness with Unit Tests","As a Developer, I want to write comprehensive unit tests for the `ScoreValidatorService`, so that I can confidently refactor or extend the business rules while ensuring correctness.",Story,Backlog,High,qa-engineer@project.com,pm@project.com,,4.6,"unit-test,quality","Sprint 1","EPIC-LBS-04: Quality Assurance and Testing","Leaderboard Service Backend",,"- Given the test suite for `ScoreValidatorService`, When a test case with a valid score is run, Then the test passes.
+- Given the test suite, When test cases for each boundary condition (min/max score, moves, time) are run, Then they all pass by correctly identifying the scores as implausible.
+- Given the test suite is run, When the code coverage report is generated, Then the coverage for `score-validator.service.ts` is above 95%.","EPIC-LBS-04","US-LBS-005","2024-05-01 09:12:00","2024-05-01 09:12:00",
+"[EPIC-LBS-02] TASK-LBS-017: Develop Unit Tests for ScoreValidatorService","Write a Jest test suite for the `ScoreValidatorService`. The tests must cover all boundary conditions for the plausibility checks, including valid inputs, inputs below minimums, and inputs above maximums.
+
+**Acceptance Criteria:**
+- A test suite for `score-validator.service.ts` is created.
+- A test case for a valid, plausible score passes.
+- At least one test case for each boundary condition violation (min/max score, moves, time) passes.
+- Code coverage for `score-validator.service.ts` exceeds 95%.",Task,Backlog,Critical,qa-engineer@project.com,pm@project.com,,4.6,"unit-test,jest,quality,QA","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/domain/services/score-validator.service.test.ts",,"US-LBS-005","TASK-LBS-009","2024-05-01 09:13:00","2024-05-01 09:13:00","Jest,TypeScript"
+"US-LBS-006: Implement Score Persistence Logic","As a Developer, I want to implement a repository that handles writing leaderboard entries to Firestore, so that the application's business logic is cleanly separated from the database infrastructure.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,4.3,"data-access,repository,firestore","Sprint 1","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend",,"- Given a `LeaderboardRepository` instance initialized with a mock Firestore object, When the `submitScore` method is called with a valid `LeaderboardEntry` object, Then the repository calls the `add` method on the correct Firestore collection specified in `constants.ts`.
+- Given the Firebase initializer module, When it is imported, Then it calls `admin.initializeApp()` once and exports a valid Firestore `db` instance.
+- Given the repository is used in an integration test, When `submitScore` is called, Then a new document matching the `LeaderboardEntry` is created in the emulated Firestore database.","EPIC-LBS-03","US-LBS-001,US-LBS-004","2024-05-01 09:14:00","2024-05-01 09:14:00",
+"[EPIC-LBS-01] TASK-LBS-005: Implement Firebase Admin SDK initializer module","Create the `src/infrastructure/firebase.ts` module. This module will perform the one-time initialization of the Firebase Admin SDK and export the `db` and `auth` instances for use throughout the application.
+
+**Acceptance Criteria:**
+- The file `src/infrastructure/firebase.ts` is created.
+- `admin.initializeApp()` is called exactly once.
+- Initialized `db` and `auth` instances are exported.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,1.1,"setup,infrastructure,firebase,Infrastructure","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/src/infrastructure/firebase.ts",,"US-LBS-006","TASK-LBS-001","2024-05-01 09:15:00","2024-05-01 09:15:00","TypeScript,Firebase Admin SDK"
+"[EPIC-LBS-01] TASK-LBS-006: Implement Leaderboard Repository for Firestore writes","Create the `LeaderboardRepository` class in `src/infrastructure/repositories/leaderboard.repository.ts`. This class will abstract the logic for writing a `LeaderboardEntry` document to the `leaderboards` collection in Firestore.
+
+**Acceptance Criteria:**
+- The `LeaderboardRepository` class is implemented with a constructor accepting a Firestore instance.
+- The `submitScore` method calls `firestore.collection(...).add(entry)`.
+- The collection name is correctly retrieved from the `constants.ts` module.
+- The code is fully typed and passes linting.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,3.2,"repository,firestore,data-access,DataAccess","Sprint 1","EPIC-LBS-01: Project Scaffolding and Core Configuration","Leaderboard Service Backend","firebase/functions/leaderboards/src/infrastructure/repositories/leaderboard.repository.ts",,"US-LBS-006","TASK-LBS-002,TASK-LBS-005,TASK-LBS-007","2024-05-01 09:16:00","2024-05-01 09:16:00","TypeScript,Firebase Admin SDK"
+"US-LBS-007: Orchestrate the Score Submission Use Case","As a Developer, I want to create an application service that orchestrates the score submission process, so that the main endpoint logic remains clean and delegates business rules and data persistence to the correct components.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,10,"application-service,orchestration","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend",,"- Given a `LeaderboardService` instance with mocked dependencies, When `handleScoreSubmission` is called with a DTO that the `ScoreValidatorService` deems implausible, Then the service throws an `HttpsError` with the code 'invalid-argument'.
+- Given a `LeaderboardService` instance with mocked dependencies, When `handleScoreSubmission` is called with a plausible DTO, Then it calls the `leaderboardRepository.submitScore` method once.
+- Given a `LeaderboardService` instance with mocked dependencies, When `handleScoreSubmission` is called with a plausible DTO, Then the `LeaderboardEntry` passed to the repository correctly maps the DTO data and includes the `userId` and `userName` from the auth context.","EPIC-LBS-02","US-LBS-005,US-LBS-006","2024-05-01 09:17:00","2024-05-01 09:17:00",
+"[EPIC-LBS-02] TASK-LBS-010: Implement Leaderboard application service","Create the `LeaderboardService` class in `src/application/leaderboard.service.ts`. This service will orchestrate the score submission use case by coordinating the `ScoreValidatorService` and `LeaderboardRepository`.
+
+**Acceptance Criteria:**
+- The `LeaderboardService` class is created with a constructor for its dependencies (validator, repository).
+- The `handleScoreSubmission` method calls `scoreValidator.isPlausible`.
+- If validation fails, an `HttpsError` with code 'invalid-argument' is thrown.
+- If validation succeeds, a `LeaderboardEntry` is constructed with data from the DTO and auth context.
+- The constructed entry is passed to the repository's `submitScore` method.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,4.2,"application-service,orchestration,ApplicationLogic","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/application/leaderboard.service.ts",,"US-LBS-007","TASK-LBS-009,TASK-LBS-006","2024-05-01 09:18:00","2024-05-01 09:18:00","TypeScript,Software Architecture"
+"[EPIC-LBS-02] TASK-LBS-011: Develop Unit Tests for LeaderboardService","Write a Jest test suite for the `LeaderboardService`, using mocks for the `ScoreValidatorService` and `LeaderboardRepository` to test the orchestration logic in isolation.
+
+**Acceptance Criteria:**
+- A test suite for `leaderboard.service.ts` is created.
+- A test verifies that an `HttpsError` is thrown when the mocked validator returns `false`.
+- A test verifies that the repository's `submitScore` method is called when the mocked validator returns `true`.
+- A test asserts that the object passed to the repository is correctly constructed from the DTO and auth context.",Task,Backlog,Critical,qa-engineer@project.com,pm@project.com,,5.8,"unit-test,jest,mocking,QA","Sprint 1","EPIC-LBS-02: Domain and Application Layer Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/application/leaderboard.service.test.ts",,"US-LBS-007","TASK-LBS-010","2024-05-01 09:19:00","2024-05-01 09:19:00","Jest,TypeScript"
+"EPIC-LBS-03: Infrastructure and Endpoint Implementation","Implement the public-facing `submitScore` endpoint, including authentication, rate-limiting, and error handling, connecting the application logic to the outside world.",Epic,Backlog,Critical,product-owner@project.com,pm@project.com,,0,"endpoint,firebase-functions,rate-limiting,security","","Leaderboard Service Backend",,,,,,,
+"US-LBS-008: Implement Secure Score Submission Endpoint","As a Developer, I want to implement the main `https.onCall` cloud function for score submission, so that clients have a secure, authenticated, and validated endpoint to submit their scores.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,17.7,"endpoint,security,validation","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend",,"- Given the `submitScore` function is invoked without an authentication context, When the function executes, Then it throws an `HttpsError` with the code 'unauthenticated'.
+- Given a user is authenticated, When they invoke the `submitScore` function with a data payload that fails Joi validation (e.g., a missing field), Then the function throws an `HttpsError` with the code 'invalid-argument'.
+- Given a user is authenticated and not rate-limited, When they invoke `submitScore` with a valid and plausible score payload, Then the function completes successfully and returns `{ success: true, ... }`.","EPIC-LBS-03","US-LBS-004,US-LBS-007,US-LBS-009","2024-05-01 09:20:00","2024-05-01 09:20:00",
+"[EPIC-LBS-03] TASK-LBS-012: Implement `submitScore` function structure and initial checks","In `src/index.ts`, define the `submitScore` `https.onCall` function. Implement the initial guard clauses: check for user authentication (`context.auth`) and validate the incoming data payload against the `submitScoreSchema` Joi schema.
+
+**Acceptance Criteria:**
+- An `https.onCall` function named `submitScore` is exported from `index.ts`.
+- The function throws an 'unauthenticated' `HttpsError` if `context.auth` is null.
+- The function validates `data` against the Joi schema.
+- The function throws an 'invalid-argument' `HttpsError` if Joi validation fails.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,4,"endpoint,firebase-functions,security,Presentation","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/index.ts",,"US-LBS-008","TASK-LBS-008,TASK-LBS-010","2024-05-01 09:21:00","2024-05-01 09:21:00","TypeScript,Firebase Cloud Functions"
+"US-LBS-009: Implement Anti-Abuse Rate Limiting","As a Developer, I want to implement transactional rate-limiting on score submissions, so that a single user cannot flood the system with requests, ensuring service availability and preventing simple spam attacks.",Story,Backlog,Critical,backend-dev@project.com,pm@project.com,,17,"rate-limiting,security,firestore,transaction","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend",,"- Given a user has made `MAX_SUBMISSIONS - 1` submissions within the time window, When they make one more submission, Then the request is allowed and a new timestamp is written to their rate-limit document in Firestore.
+- Given a user has made `MAX_SUBMISSIONS` submissions within the time window, When they attempt another submission, Then the `enforceRateLimit` function throws an `HttpsError` with the code 'resource-exhausted'.
+- Given a user has no previous submissions, When they make their first submission, Then a new rate-limit document is created for them in Firestore with a single timestamp.","EPIC-LBS-03","US-LBS-006","2024-05-01 09:22:00","2024-05-01 09:22:00",
+"[EPIC-LBS-03] TASK-LBS-014: Implement transactional rate-limiting logic","Implement the `enforceRateLimit` helper function using a Firestore transaction (`runTransaction`). This function will atomically read a user's submission timestamps, check if they are over the limit, and update the timestamps if they are not.
+
+**Acceptance Criteria:**
+- The `enforceRateLimit` function is implemented and uses `db.runTransaction`.
+- The logic correctly filters timestamps to the configured time window.
+- An `HttpsError` with code 'resource-exhausted' is thrown if the submission count exceeds `MAX_SUBMISSIONS`.
+- The transaction correctly adds a new timestamp to an existing document.
+- The transaction correctly creates a new document for a first-time submitter.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,8.5,"rate-limiting,firestore,transaction,security,Infrastructure","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","src/index.ts",,"US-LBS-009","TASK-LBS-002,TASK-LBS-005","2024-05-01 09:23:00","2024-05-01 09:23:00","TypeScript,Firebase Admin SDK"
+"[EPIC-LBS-03] TASK-LBS-013: Integrate services and error handling into `submitScore` function","Complete the `submitScore` function by instantiating and wiring together the services (DI). Delegate valid requests to the `leaderboardService`. Implement a try/catch block to handle known `HttpsError`s and log unexpected internal errors.
+
+**Acceptance Criteria:**
+- Services (Validator, Repository, LeaderboardService) are instantiated at the top level.
+- A valid request successfully calls `leaderboardService.handleScoreSubmission`.
+- A successful execution returns a `{ success: true, ... }` object.
+- An unexpected error is caught, logged via `functions.logger.error`, and re-thrown as an 'internal' `HttpsError`.",Task,Backlog,Critical,backend-dev@project.com,pm@project.com,,5.2,"endpoint,firebase-functions,di,error-handling,Presentation","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","firebase/functions/leaderboards/src/index.ts",,"US-LBS-008","TASK-LBS-012,TASK-LBS-014","2024-05-01 09:24:00","2024-05-01 09:24:00","TypeScript,Firebase Cloud Functions"
+"EPIC-LBS-04: Quality Assurance and Testing","Define and implement the testing strategy, including setting up the test environment and writing comprehensive unit and integration tests to ensure the service is correct, robust, and secure.",Epic,Backlog,High,product-owner@project.com,pm@project.com,,0,"testing,qa,quality,unit-test,integration-test","","Leaderboard Service Backend",,,,,,,
+"US-LBS-011: Verify End-to-End Functionality with Integration Tests","As a Developer, I want to write integration tests using the Firebase Emulator Suite, so that I can verify the entire request lifecycle, including authentication, validation, rate limiting, and database interactions.",Story,Backlog,High,qa-engineer@project.com,pm@project.com,,23.5,"integration-test,firebase-emulator,e2e","Sprint 2","EPIC-LBS-04: Quality Assurance and Testing","Leaderboard Service Backend",,"- Given the Firebase emulators are running, When an integration test calls the `submitScore` function with valid data, Then it asserts that a corresponding document is created in the emulated Firestore.
+- Given the emulators are running, When an integration test calls the function without auth or with an implausible score, Then it asserts that the correct `HttpsError` ('unauthenticated' or 'invalid-argument') is thrown.
+- Given the emulators are running, When an integration test calls the function more times than the rate limit allows, Then it asserts that a 'resource-exhausted' error is thrown on the final call.","EPIC-LBS-04","US-LBS-008","2024-05-01 09:25:00","2024-05-01 09:25:00",
+"[EPIC-LBS-04] TASK-LBS-018: Setup Jest for integration testing with Firebase Emulators","Configure the Jest test environment to automatically start and stop the Firebase Emulator Suite. This includes setting up global setup/teardown scripts and configuring environment variables for the tests to connect to the emulators.
+
+**Acceptance Criteria:**
+- A Jest global setup script is created to start the emulators.
+- A Jest global teardown script is created to stop the emulators.
+- `jest.config.js` is updated to use these scripts.
+- Tests can successfully connect to the emulated Firestore and Auth services.",Task,Backlog,High,qa-engineer@project.com,pm@project.com,,6.5,"integration-test,jest,firebase-emulator,test-setup,DevOps","Sprint 2","EPIC-LBS-04: Quality Assurance and Testing","Leaderboard Service Backend","jest.config.js",,"US-LBS-011","TASK-LBS-001","2024-05-01 09:26:00","2024-05-01 09:26:00","Jest,Firebase Emulator Suite,npm scripts"
+"[EPIC-LBS-03] TASK-LBS-019: Develop integration test for the successful score submission path","Using the Firebase Emulator Suite, write a test that calls the `submitScore` function with a valid, authenticated request and asserts that the corresponding leaderboard entry is correctly created in the emulated Firestore.
+
+**Acceptance Criteria:**
+- The test successfully calls the `submitScore` function as an authenticated user.
+- The test asserts the function returns a success response.
+- The test queries the emulated Firestore and asserts that a new document was created in the `leaderboards` collection.
+- The created document's data (userId, levelId, score, etc.) matches the submitted data.",Task,Backlog,Critical,qa-engineer@project.com,pm@project.com,,5.3,"integration-test,jest,firebase-emulator,QA","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","index.test.ts",,"US-LBS-008","TASK-LBS-018,TASK-LBS-013","2024-05-01 09:27:00","2024-05-01 09:27:00","Jest,Firebase Emulator Suite"
+"[EPIC-LBS-03] TASK-LBS-020: Develop integration tests for failure paths","Write integration tests for various failure scenarios: unauthenticated calls, requests with invalid data (failing DTO validation), and requests with implausible scores (failing business rule validation).
+
+**Acceptance Criteria:**
+- A test for an unauthenticated call asserts that an 'unauthenticated' `HttpsError` is thrown.
+- A test with an invalid DTO (e.g., missing `levelId`) asserts an 'invalid-argument' `HttpsError` is thrown.
+- A test with an implausible score (e.g., score of -10) asserts an 'invalid-argument' `HttpsError` is thrown.
+- Each test asserts that no document was written to the `leaderboards` collection.",Task,Backlog,Critical,qa-engineer@project.com,pm@project.com,,3.2,"integration-test,jest,firebase-emulator,error-handling,QA","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","index.test.ts",,"US-LBS-008","TASK-LBS-018,TASK-LBS-013","2024-05-01 09:28:00","2024-05-01 09:28:00","Jest,Firebase Emulator Suite"
+"[EPIC-LBS-03] TASK-LBS-021: Develop integration test for rate-limiting","Write an integration test that repeatedly calls the `submitScore` function for the same user to verify the rate-limiting logic. The test must assert that requests are successful up to the limit and then fail with the correct error.
+
+**Acceptance Criteria:**
+- The test calls the function `MAX_SUBMISSIONS` times in a loop and asserts each call succeeds.
+- The test calls the function one more time (`MAX_SUBMISSIONS + 1`) and asserts that it throws an `HttpsError` with code 'resource-exhausted'.
+- The test verifies the final state of the user's rate-limit document in Firestore.",Task,Backlog,Critical,qa-engineer@project.com,pm@project.com,,8.5,"integration-test,jest,firebase-emulator,rate-limiting,QA","Sprint 2","EPIC-LBS-03: Infrastructure and Endpoint Implementation","Leaderboard Service Backend","index.test.ts",,"US-LBS-009","TASK-LBS-018,TASK-LBS-013","2024-05-01 09:29:00","2024-05-01 09:29:00","Jest,Firebase Emulator Suite"
+"EPIC-LBS-05: CI/CD and Documentation","Establish automated pipelines for continuous integration and deployment, and create developer-facing documentation to ensure the service is maintainable and easy to onboard new team members.",Epic,Backlog,High,product-owner@project.com,pm@project.com,,0,"ci-cd,devops,automation,documentation","","Leaderboard Service Backend",,,,,,,
+"US-LBS-012: Automate Build and Deployment","As a DevOps Engineer, I want to set up a CI/CD pipeline for the leaderboard service, so that every change is automatically built, tested, and deployed, ensuring code quality and rapid, reliable delivery.",Story,Backlog,High,devops@project.com,pm@project.com,,23.5,"ci-cd,automation,github-actions","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend",,"- Given a developer creates a pull request, When the code is pushed, Then a CI workflow is triggered that runs the linter and all unit and integration tests.
+- Given a pull request has a failing test in the CI workflow, When a developer views the PR, Then merging is blocked until the tests are fixed.
+- Given a pull request is merged into the `main` branch, When the CD workflow completes, Then the new version of the `submitScore` function and its related rules are successfully deployed to the staging Firebase project.","EPIC-LBS-05","US-LBS-001,US-LBS-011","2024-05-01 09:30:00","2024-05-01 09:30:00",
+"[EPIC-LBS-05] TASK-LBS-022: Setup CI workflow for PR validation","Create a GitHub Actions workflow that triggers on `pull_request`. This workflow will check out the code, install dependencies, and run the linter and all unit tests.
+
+**Acceptance Criteria:**
+- A `.github/workflows/pull-request.yml` file is created.
+- The workflow triggers on pull requests to the `main` branch.
+- The workflow includes steps for `npm install`, `npm run lint`, and `npm test` (for unit tests only).
+- The PR is blocked from merging if any step fails.",Task,Backlog,High,devops@project.com,pm@project.com,,5.5,"ci,github-actions,automation,DevOps","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend",".github/workflows/pull-request.yml",,"US-LBS-012","TASK-LBS-001,TASK-LBS-017","2024-05-01 09:31:00","2024-05-01 09:31:00","YAML,GitHub Actions"
+"[EPIC-LBS-05] TASK-LBS-023: Add integration test step to CI workflow","Enhance the PR validation workflow to also run the integration tests. This requires setting up Java and the Firebase Emulator Suite within the GitHub Actions runner.
+
+**Acceptance Criteria:**
+- The PR workflow is updated to include steps for setting up Java.
+- The workflow runs the integration test script, which starts the emulators.
+- The PR is blocked from merging if integration tests fail.",Task,Backlog,High,devops@project.com,pm@project.com,,9.5,"ci,github-actions,integration-test,DevOps","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend",".github/workflows/pull-request.yml",,"US-LBS-012","TASK-LBS-022,TASK-LBS-018","2024-05-01 09:32:00","2024-05-01 09:32:00","YAML,GitHub Actions,Firebase Emulator Suite"
+"[EPIC-LBS-05] TASK-LBS-024: Setup CD workflow for deployment to staging","Create a new GitHub Actions workflow that triggers on pushes to the `main` branch. This workflow will deploy the functions, Firestore rules, and indexes to a staging Firebase project.
+
+**Acceptance Criteria:**
+- A `.github/workflows/deploy.yml` file is created.
+- The workflow triggers on pushes to `main`.
+- It uses a `FIREBASE_TOKEN` secret to authenticate with Firebase.
+- It runs the `firebase deploy` command with the `--only functions,firestore` flags.
+- The deployment to the staging project is successful.",Task,Backlog,High,devops@project.com,pm@project.com,,8.5,"cd,github-actions,deployment,automation,DevOps","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend",".github/workflows/deploy.yml",,"US-LBS-012","TASK-LBS-023","2024-05-01 09:33:00","2024-05-01 09:33:00","YAML,GitHub Actions,Firebase CLI"
+"US-LBS-013: Document Repository for Developer Onboarding","As a new Developer on the project, I want to read a comprehensive `README.md` file, so that I can quickly understand the service's purpose and set up my local development environment.",Story,Backlog,Could Have,backend-dev@project.com,pm@project.com,,4.2,"documentation,onboarding","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend",,"- Given I have cloned the repository, When I open the `README.md` file, Then I can find a clear explanation of what the service does.
+- Given I am setting up my local environment, When I follow the instructions in the README, Then I can successfully install all dependencies using `npm install`.
+- Given I want to run the service locally, When I follow the instructions in the README, Then I can successfully start the Firebase emulators and run the test suite.","EPIC-LBS-05",,"2024-05-01 09:34:00","2024-05-01 09:34:00",
+"[EPIC-LBS-05] TASK-LBS-015: Create comprehensive repository README.md","Write the `README.md` file for the functions repository. It must explain the service's purpose, list prerequisites, and provide clear, step-by-step instructions for local setup, running tests, and deployment.
+
+**Acceptance Criteria:**
+- A `README.md` file exists in the functions root directory.
+- It contains an 'About' section explaining the service's purpose.
+- It has a 'Setup' section with prerequisites and `npm install` instructions.
+- It has a 'Local Development' section explaining how to run the emulators.
+- It documents the primary `npm` scripts (`build`, `test`, `deploy`, etc.).",Task,Backlog,Could Have,backend-dev@project.com,pm@project.com,,4.2,"documentation,Documentation","Sprint 3","EPIC-LBS-05: CI/CD and Documentation","Leaderboard Service Backend","firebase/functions/leaderboards/README.md",,"US-LBS-013","TASK-LBS-018,TASK-LBS-024","2024-05-01 09:35:00","2024-05-01 09:35:00","Markdown,Technical Writing"

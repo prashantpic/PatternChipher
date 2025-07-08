@@ -1,0 +1,54 @@
+sequenceDiagram
+    actor "User" as User
+    participant "GameClientApplication" as GameClientApplication
+    participant "BackendServiceFacade" as BackendServiceFacade
+    participant "Firebase Crashlytics" as FirebaseCrashlyticsBackend
+    participant "Alerting Channel" as AlertingChannel
+    actor "Developer" as Developer
+
+    loop Plays the game
+        User-GameClientApplication: 1. Plays the game
+        activate GameClientApplication
+        note over GameClientApplication: An unhandled exception occurs. The app is about to terminate.
+        GameClientApplication-GameClientApplication: 1.1. Runtime logic execution leads to an unhandled exception
+        GameClientApplication-BackendServiceFacade: 1.2. catchUnhandledException(exception, customKeys)
+        activate BackendServiceFacade
+        BackendServiceFacade-BackendServiceFacade: 1.2.1. Persist crash report to local device storage
+        deactivate BackendServiceFacade
+        destroy GameClientApplication
+    end
+
+    User-GameClientApplication: 2. Launches app again
+    activate GameClientApplication
+
+    GameClientApplication-BackendServiceFacade: 3. initialize()
+    activate BackendServiceFacade
+    BackendServiceFacade-BackendServiceFacade: 3.1. checkForUnsentReports()
+    activate BackendServiceFacade
+    BackendServiceFacade--BackendServiceFacade: true
+    deactivate BackendServiceFacade
+    note right of BackendServiceFacade: Crash report is sent asynchronously after the user relaunches the app to avoid blocking the termination process and to handle offline scenarios.
+    BackendServiceFacade-FirebaseCrashlyticsBackend: 3.2. POST /reports (crashReportPayload)
+    activate FirebaseCrashlyticsBackend
+    FirebaseCrashlyticsBackend--BackendServiceFacade: 3.3. 202 Accepted
+    BackendServiceFacade-BackendServiceFacade: 3.4. deleteLocalReport()
+    BackendServiceFacade--GameClientApplication: 
+    deactivate BackendServiceFacade
+
+    FirebaseCrashlyticsBackend-FirebaseCrashlyticsBackend: 4. Process Report (Deobfuscate, Group, Increment Count)
+    
+    note over FirebaseCrashlyticsBackend: Alerting is triggered if this is a new crash signature or if the frequency of an existing crash exceeds a configured velocity threshold.
+    alt Issue meets alerting criteria
+        FirebaseCrashlyticsBackend-AlertingChannel: 5.1. sendAlert(issueDetails)
+        activate AlertingChannel
+        AlertingChannel-Developer: 5.2. Displays notification: "New Crash in Pattern Cipher..."
+        deactivate AlertingChannel
+    end
+
+    Developer-FirebaseCrashlyticsBackend: 6. Investigates crash in Firebase Console
+    activate Developer
+    FirebaseCrashlyticsBackend--Developer: Crash issue details, stack trace, affected users
+    deactivate FirebaseCrashlyticsBackend
+    deactivate Developer
+
+    deactivate GameClientApplication

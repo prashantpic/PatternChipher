@@ -1,0 +1,27 @@
+[
+  {
+    "propertyName": "player_first_open_date",
+    "dataType": "string",
+    "description": "The date (YYYY-MM-DD) of the user's first session. Used for cohort analysis."
+  },
+  {
+    "propertyName": "highest_level_pack_unlocked",
+    "dataType": "string",
+    "description": "The identifier of the highest level pack the user has unlocked."
+  },
+  {
+    "propertyName": "total_stars_collected",
+    "dataType": "long",
+    "description": "The cumulative number of stars the player has earned."
+  },
+  {
+    "propertyName": "player_consent_status",
+    "dataType": "string",
+    "description": "The current analytics consent status (e.g., 'granted', 'denied')."
+  },
+  {
+    "propertyName": "last_played_puzzle_type",
+    "dataType": "string",
+    "description": "The type of puzzle the player last engaged with."
+  }
+]
